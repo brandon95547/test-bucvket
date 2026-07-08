@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 
 import soundfile as sf
+import torch
 from neutts import NeuTTS
 
 ROOT = Path(__file__).resolve().parent
@@ -28,6 +29,8 @@ OUT_WAV = ROOT / "outputs" / "strong_clone.wav"
 # for a faster CPU run, or a *-gguf repo if you install llama-cpp-python).
 BACKBONE = os.environ.get("NEUTTS_BACKBONE", "neuphonic/neutts-air")
 CODEC = os.environ.get("NEUTTS_CODEC", "neuphonic/neucodec")
+# Use the GPU when available (prod), fall back to CPU (dev). Override with NEUTTS_DEVICE.
+DEVICE = os.environ.get("NEUTTS_DEVICE") or ("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def ensure_ref_text() -> str:
@@ -51,12 +54,12 @@ def main() -> None:
     # Collapse the paragraph whitespace in test.txt into a single passage for synthesis.
     input_text = " ".join(INPUT_TXT.read_text().split())
 
-    print(f"[tts] loading NeuTTS  backbone={BACKBONE}  codec={CODEC}  (cpu)...")
+    print(f"[tts] loading NeuTTS  backbone={BACKBONE}  codec={CODEC}  device={DEVICE} ...")
     tts = NeuTTS(
         backbone_repo=BACKBONE,
-        backbone_device="cpu",
+        backbone_device=DEVICE,
         codec_repo=CODEC,
-        codec_device="cpu",
+        codec_device=DEVICE,
     )
 
     print(f"[tts] encoding reference clip {REF_WAV.name} ...")
