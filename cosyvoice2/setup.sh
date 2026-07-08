@@ -21,7 +21,8 @@ echo "== 2/4 create Python 3.10 venv =="
 if command -v python3.10 >/dev/null 2>&1; then
   python3.10 -m venv .venv
 elif command -v uv >/dev/null 2>&1; then
-  uv venv --python 3.10 .venv
+  # --seed installs pip/setuptools/wheel into the venv (uv omits them by default)
+  uv venv --python 3.10 --seed .venv
 else
   echo "ERROR: need python3.10 or uv to make a 3.10 venv (CosyVoice requires 3.10)" >&2
   exit 1
