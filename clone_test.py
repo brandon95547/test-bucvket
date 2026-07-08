@@ -39,6 +39,14 @@ DEVICE = os.environ.get("NEUTTS_DEVICE") or ("cuda" if torch.cuda.is_available()
 MAX_CHARS = int(os.environ.get("NEUTTS_MAX_CHARS", "200"))
 SAMPLE_RATE = 24000
 
+# Generation sampling. NeuTTS's built-in generate() uses temperature=1.0 with NO
+# repetition_penalty (neutts/neutts.py), which makes a small AR model repeat words and
+# drift in pace. We wrap the backbone's generate() to inject steadier defaults; all
+# env-tunable so you can dial them in by ear.
+GEN_TEMPERATURE = float(os.environ.get("NEUTTS_TEMPERATURE", "0.7"))
+GEN_REPETITION_PENALTY = float(os.environ.get("NEUTTS_REPETITION_PENALTY", "1.3"))
+GEN_TOP_P = float(os.environ.get("NEUTTS_TOP_P", "0.9"))
+
 
 def ensure_ref_text() -> str:
     """Return the reference transcript, transcribing the clip if we don't have one."""
@@ -76,6 +84,30 @@ def chunk_text(text: str, max_chars: int) -> list[str]:
     return chunks
 
 
+def _tune_generation(tts: NeuTTS) -> None:
+    """Override NeuTTS's hardcoded sampling to curb word repetition / unsteady pacing.
+
+    The library calls ``backbone.generate(temperature=1.0, top_k=50, ...)`` with no
+    repetition_penalty. We wrap it to add a repetition penalty, lower the temperature,
+    and use nucleus (top_p) sampling. Only affects the torch backbone (not GGUF).
+    """
+    backbone = getattr(tts, "backbone", None)
+    if backbone is None or not callable(getattr(backbone, "generate", None)):
+        print("[tts] generation tuning skipped (no torch backbone — GGUF path?)")
+        return
+    _orig_generate = backbone.generate
+
+    def generate(*args, **kwargs):
+        kwargs["temperature"] = GEN_TEMPERATURE
+        kwargs["repetition_penalty"] = GEN_REPETITION_PENALTY
+        kwargs["top_p"] = GEN_TOP_P
+        return _orig_generate(*args, **kwargs)
+
+    backbone.generate = generate
+    print(f"[tts] generation tuned: temperature={GEN_TEMPERATURE} "
+          f"repetition_penalty={GEN_REPETITION_PENALTY} top_p={GEN_TOP_P}")
+
+
 def main() -> None:
     ref_text = ensure_ref_text()
     # Collapse the paragraph whitespace in test.txt into a single passage for synthesis.
@@ -88,6 +120,7 @@ def main() -> None:
         codec_repo=CODEC,
         codec_device=DEVICE,
     )
+    _tune_generation(tts)
 
     print(f"[tts] encoding reference clip {REF_WAV.name} ...")
     ref_codes = tts.encode_reference(str(REF_WAV))
