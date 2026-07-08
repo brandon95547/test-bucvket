@@ -35,6 +35,8 @@ NEUTTS_BACKBONE=neuphonic/neutts-nano .venv/bin/python clone_test.py   # smaller
 
 ## Notes
 
-- NeuTTS Air is tuned for short utterances; very long passages may degrade — chunk by
-  sentence/paragraph if needed.
+- NeuTTS Air is short-form (2048-token context: ref audio + ref text + input + generated audio).
+  The script auto-splits input into `NEUTTS_MAX_CHARS`-sized sentence chunks (default 200) and
+  concatenates the results, so long passages like `test.txt` work. If a single long sentence still
+  overflows, lower `NEUTTS_MAX_CHARS` or shorten `reference/strong_ref.wav`.
 - To re-transcribe the reference, delete `reference/strong_ref.txt` and re-run.

@@ -13,8 +13,10 @@ Run:  .venv/bin/python clone_test.py
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 
+import numpy as np
 import soundfile as sf
 import torch
 from neutts import NeuTTS
@@ -31,6 +33,11 @@ BACKBONE = os.environ.get("NEUTTS_BACKBONE", "neuphonic/neutts-air")
 CODEC = os.environ.get("NEUTTS_CODEC", "neuphonic/neucodec")
 # Use the GPU when available (prod), fall back to CPU (dev). Override with NEUTTS_DEVICE.
 DEVICE = os.environ.get("NEUTTS_DEVICE") or ("cuda" if torch.cuda.is_available() else "cpu")
+# NeuTTS Air is short-form: the whole prompt (ref codes + ref text + input) plus the generated
+# audio codes must fit the backbone's 2048-token context. Long input is split into <=MAX_CHARS
+# sentence chunks, each synthesized separately and concatenated.
+MAX_CHARS = int(os.environ.get("NEUTTS_MAX_CHARS", "200"))
+SAMPLE_RATE = 24000
 
 
 def ensure_ref_text() -> str:
@@ -49,6 +56,26 @@ def ensure_ref_text() -> str:
     return text
 
 
+def chunk_text(text: str, max_chars: int) -> list[str]:
+    """Pack whole sentences into chunks no longer than ``max_chars`` (never splits a sentence)."""
+    chunks: list[str] = []
+    buf = ""
+    for sentence in re.split(r"(?<=[.!?])\s+", text.strip()):
+        sentence = sentence.strip()
+        if not sentence:
+            continue
+        if not buf:
+            buf = sentence
+        elif len(buf) + 1 + len(sentence) <= max_chars:
+            buf = f"{buf} {sentence}"
+        else:
+            chunks.append(buf)
+            buf = sentence
+    if buf:
+        chunks.append(buf)
+    return chunks
+
+
 def main() -> None:
     ref_text = ensure_ref_text()
     # Collapse the paragraph whitespace in test.txt into a single passage for synthesis.
@@ -65,12 +92,22 @@ def main() -> None:
     print(f"[tts] encoding reference clip {REF_WAV.name} ...")
     ref_codes = tts.encode_reference(str(REF_WAV))
 
-    print(f"[tts] synthesizing {len(input_text)} chars from {INPUT_TXT.name} (CPU — this can take a while)...")
-    wav = tts.infer(input_text, ref_codes, ref_text)
+    chunks = chunk_text(input_text, MAX_CHARS)
+    print(f"[tts] synthesizing {len(input_text)} chars from {INPUT_TXT.name} "
+          f"in {len(chunks)} chunk(s) on {DEVICE}...")
+    silence = np.zeros(int(0.3 * SAMPLE_RATE), dtype=np.float32)
+    parts: list[np.ndarray] = []
+    for i, chunk in enumerate(chunks, start=1):
+        print(f"[tts]   chunk {i}/{len(chunks)} ({len(chunk)} chars)...")
+        part = np.asarray(tts.infer(chunk, ref_codes, ref_text), dtype=np.float32)
+        parts.append(part)
+        if i < len(chunks):
+            parts.append(silence)
 
+    wav = np.concatenate(parts) if parts else np.zeros(0, dtype=np.float32)
     OUT_WAV.parent.mkdir(parents=True, exist_ok=True)
-    sf.write(str(OUT_WAV), wav, 24000)
-    print(f"[done] wrote {OUT_WAV.relative_to(ROOT)}")
+    sf.write(str(OUT_WAV), wav, SAMPLE_RATE)
+    print(f"[done] wrote {OUT_WAV.relative_to(ROOT)}  ({len(wav) / SAMPLE_RATE:.1f}s)")
 
 
 if __name__ == "__main__":
