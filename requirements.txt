@@ -1,0 +1,4 @@
+# NeuTTS Air clone test
+neutts
+soundfile
+faster-whisper   # only to auto-transcribe the reference clip -> ref text

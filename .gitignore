@@ -1,0 +1,14 @@
+# python env / caches
+.venv/
+__pycache__/
+*.pyc
+
+# install + run logs
+install*.log
+
+# generated audio + encoded reference codes (regenerated on run)
+outputs/
+reference/*.pt
+
+# model / HF caches if they ever land here
+.cache/
