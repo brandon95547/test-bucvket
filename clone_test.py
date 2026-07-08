@@ -43,8 +43,8 @@ SAMPLE_RATE = 24000
 # repetition_penalty (neutts/neutts.py), which makes a small AR model repeat words and
 # drift in pace. We wrap the backbone's generate() to inject steadier defaults; all
 # env-tunable so you can dial them in by ear.
-GEN_TEMPERATURE = float(os.environ.get("NEUTTS_TEMPERATURE", "0.7"))
-GEN_REPETITION_PENALTY = float(os.environ.get("NEUTTS_REPETITION_PENALTY", "1.3"))
+GEN_TEMPERATURE = float(os.environ.get("NEUTTS_TEMPERATURE", "0.8"))
+GEN_REPETITION_PENALTY = float(os.environ.get("NEUTTS_REPETITION_PENALTY", "1.1"))
 GEN_TOP_P = float(os.environ.get("NEUTTS_TOP_P", "0.9"))
 
 
