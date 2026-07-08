@@ -1,14 +1,20 @@
-# python env / caches
+# python envs / caches (match at any depth — one .venv per engine subdir)
 .venv/
+venv/
 __pycache__/
 *.pyc
 
 # install + run logs
 install*.log
+run*.log
 
 # generated audio + encoded reference codes (regenerated on run)
 outputs/
-reference/*.pt
+*.pt
 
 # model / HF caches if they ever land here
 .cache/
+pretrained_models/
+
+# cloned upstream engine repos (fetched by each engine's setup.sh)
+CosyVoice/

@@ -1,0 +1,8 @@
+# CosyVoice 2 test — EXTRAS ONLY.
+#
+# The bulk of the dependencies (torch==2.3.1+cu121, torchaudio, transformers,
+# onnxruntime, matcha-tts deps, etc.) are pinned in the *cloned* CosyVoice repo's
+# own requirements.txt and installed by setup.sh — we don't duplicate those pins
+# here so they can't drift from upstream. Listed below is only what this test adds.
+modelscope        # snapshot_download for the CosyVoice2-0.5B model
+soundfile         # wav i/o backend for torchaudio
