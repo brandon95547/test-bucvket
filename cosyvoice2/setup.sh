@@ -18,20 +18,29 @@ else
 fi
 
 echo "== 2/4 create Python 3.10 venv =="
-if command -v python3.10 >/dev/null 2>&1; then
-  python3.10 -m venv .venv
-elif command -v uv >/dev/null 2>&1; then
-  # --seed installs pip/setuptools/wheel into the venv (uv omits them by default)
-  uv venv --python 3.10 --seed .venv
-else
-  echo "ERROR: need python3.10 or uv to make a 3.10 venv (CosyVoice requires 3.10)" >&2
-  exit 1
-fi
+if [ ! -d .venv ]; then
+  if command -v python3.10 >/dev/null 2>&1; then
+    python3.10 -m venv .venv
+  elif command -v uv >/dev/null 2>&1; then
+    # --seed installs pip/setuptools/wheel into the venv (uv omits them by default)
+    uv venv --python 3.10 --seed .venv
+  else
+    echo "ERROR: need python3.10 or uv to make a 3.10 venv (CosyVoice requires 3.10)" >&2
+    exit 1
+  fi
+fi  # reuse an existing venv on re-runs (don't re-download multi-GB torch)
 .venv/bin/pip install --upgrade pip
 
 echo "== 3/4 install deps =="
-# CosyVoice's own pinned requirements (torch==2.3.1+cu121, torchaudio, transformers,
-# onnxruntime, modelscope, matcha-tts deps, ...), then this test's extras.
+# openai-whisper==20231117 (a CosyVoice pin) has a legacy setup.py that imports
+# pkg_resources at build time; setuptools>=81 no longer ships it, so pip's *isolated*
+# build env fails with "No module named 'pkg_resources'". Pin an older setuptools in the
+# venv and build whisper WITHOUT build isolation so it uses that. Do this before the
+# requirements install so the pinned whisper is already satisfied.
+.venv/bin/pip install "setuptools<81" wheel
+.venv/bin/pip install --no-build-isolation openai-whisper==20231117
+# CosyVoice's own pinned requirements (torch==2.3.1+cu121, transformers, onnxruntime, ...),
+# then this test's extras.
 .venv/bin/pip install -r CosyVoice/requirements.txt
 .venv/bin/pip install -r requirements.txt
 
