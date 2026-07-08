@@ -21,11 +21,12 @@ import soundfile as sf
 import torch
 from neutts import NeuTTS
 
-ROOT = Path(__file__).resolve().parent
-REF_WAV = ROOT / "reference" / "strong_ref.wav"
-REF_TXT = ROOT / "reference" / "strong_ref.txt"
-INPUT_TXT = ROOT / "test.txt"
-OUT_WAV = ROOT / "outputs" / "strong_clone.wav"
+ROOT = Path(__file__).resolve().parent      # this engine's dir (neutts/)
+REPO_ROOT = ROOT.parent                      # shared inputs live at the repo root
+REF_WAV = REPO_ROOT / "reference" / "strong_ref.wav"   # shared reference clip
+REF_TXT = REPO_ROOT / "reference" / "strong_ref.txt"   # shared reference transcript
+INPUT_TXT = REPO_ROOT / "test.txt"                     # shared input text
+OUT_WAV = ROOT / "outputs" / "strong_clone.wav"        # per-engine output
 
 # neuphonic/neutts-air is the flagship; override with NEUTTS_BACKBONE (e.g. neutts-nano
 # for a faster CPU run, or a *-gguf repo if you install llama-cpp-python).

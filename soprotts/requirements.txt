@@ -1,0 +1,5 @@
+# SoproTTS clone test. The `sopro` package pulls its own deps (torch, torchaudio,
+# transformers, huggingface_hub, safetensors, sentencepiece, soundfile, tqdm).
+# English-only, zero-shot (no reference transcript), 135M params, CPU-fast.
+# The model downloads automatically on first run via SoproTTS.from_pretrained().
+sopro
