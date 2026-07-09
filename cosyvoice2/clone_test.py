@@ -42,6 +42,22 @@ MODEL_DIR = os.environ.get(
 MAX_CHARS = int(os.environ.get("COSY_MAX_CHARS", "300"))
 
 
+def _envflag(name: str, default: bool = False) -> bool:
+    return os.environ.get(name, "1" if default else "0").strip().lower() in {"1", "true", "yes", "on"}
+
+
+# fp16 GPU precision (CosyVoice's recommended default). On by default; COSY_FP16=0 to disable.
+USE_FP16 = _envflag("COSY_FP16", default=True)
+# COSY_FAST=1 turns on the two accelerators that need extra install/build steps on the box:
+#   - vLLM LLM backend: needs `pip install vllm`; exports a Qwen2 engine on first run.
+#     Removes the per-token CPU sync that starves the GPU during autoregressive decoding.
+#   - TensorRT flow estimator: needs tensorrt; builds an fp16 engine on first run (slow once).
+# Toggle them individually with COSY_VLLM / COSY_TRT (both default to COSY_FAST's value).
+FAST = _envflag("COSY_FAST", default=False)
+USE_VLLM = _envflag("COSY_VLLM", default=FAST)
+USE_TRT = _envflag("COSY_TRT", default=FAST)
+
+
 def chunk_text(text: str, max_chars: int) -> list[str]:
     """Pack whole sentences into chunks no longer than ``max_chars`` (never splits a sentence)."""
     chunks: list[str] = []
@@ -66,9 +82,22 @@ def main() -> None:
     prompt_text = REF_TXT.read_text().strip()  # CosyVoice conditions on this; match the clip
     input_text = " ".join(INPUT_TXT.read_text().split())
 
-    print(f"[cosy] loading CosyVoice2 from {MODEL_DIR} ...")
-    cosy = CosyVoice2(MODEL_DIR, load_jit=False, load_trt=False, load_vllm=False, fp16=False)
+    print(f"[cosy] loading CosyVoice2 from {MODEL_DIR} "
+          f"(fp16={USE_FP16}, vllm={USE_VLLM}, trt={USE_TRT}) ...")
+    # fp16: CosyVoice's recommended GPU precision — ~2x less memory bandwidth for the batch-1
+    # autoregressive LLM and tensor-core kernels, ~halved VRAM, no audible quality change.
+    # load_vllm / load_trt: see COSY_FAST above. All three auto-downgrade to off (with a
+    # warning) if no CUDA is visible, so this stays runnable on CPU.
+    cosy = CosyVoice2(MODEL_DIR, load_jit=False, load_trt=USE_TRT, load_vllm=USE_VLLM, fp16=USE_FP16)
     sample_rate = cosy.sample_rate  # 24000 for CosyVoice2
+
+    # Extract the reference speaker's tokens/embedding/feat ONCE and cache under an id.
+    # Otherwise inference_zero_shot re-runs all three prompt extractors (Whisper mel + ONNX
+    # speech tokenizer, CPU campplus embedding, speech feat) for EVERY internal sentence —
+    # a dozen-plus redundant CPU/ONNX passes that stall the GPU. Cached features are
+    # byte-identical, so voice similarity is unchanged.
+    SPK_ID = "ref"
+    cosy.add_zero_shot_spk(prompt_text, str(REF_WAV), SPK_ID)
 
     chunks = chunk_text(input_text, MAX_CHARS)
     print(f"[cosy] synthesizing {len(input_text)} chars in {len(chunks)} chunk(s); "
@@ -76,8 +105,9 @@ def main() -> None:
     parts: list[torch.Tensor] = []
     for i, chunk in enumerate(chunks, start=1):
         print(f"[cosy]   chunk {i}/{len(chunks)} ({len(chunk)} chars)...")
-        # zero-shot: (target_text, prompt_transcript, prompt_wav_path)
-        for out in cosy.inference_zero_shot(chunk, prompt_text, str(REF_WAV), stream=False):
+        # zero-shot via cached speaker id: prompt_text/prompt_wav are unused when
+        # zero_shot_spk_id is set, so pass empty strings.
+        for out in cosy.inference_zero_shot(chunk, "", "", zero_shot_spk_id=SPK_ID, stream=False):
             parts.append(out["tts_speech"])
 
     wav = torch.cat(parts, dim=1)  # each tts_speech is [1, samples]
