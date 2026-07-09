@@ -59,22 +59,21 @@ echo "== 3/4 install deps (single env, vLLM-enabled) =="
 #    otherwise). transformers/numpy pinned to the values CosyVoice also needs.
 .venv/bin/pip install vllm==0.9.0 torchaudio==2.7.0 transformers==4.51.3 numpy==1.26.4
 
-# 2. Constraints file: lets CosyVoice's requirements install everything else (tensorrt,
-#    onnxruntime-gpu, conformer, ...) while forbidding a torch/torchaudio downgrade.
-cat > /tmp/cosy_constraints.txt <<'CONS'
-torch==2.7.0
-torchaudio==2.7.0
-transformers==4.51.3
-numpy==1.26.4
-CONS
-
 # whisper now that torch is present (no-build-isolation avoids the pkg_resources failure).
 .venv/bin/pip install --no-build-isolation openai-whisper==20231117
 
-# CosyVoice's own requirements (onnxruntime, tensorrt, matcha deps, ...) under constraints,
-# then this test's extras.
-.venv/bin/pip install -r CosyVoice/requirements.txt -c /tmp/cosy_constraints.txt
-.venv/bin/pip install -r requirements.txt -c /tmp/cosy_constraints.txt
+# 2. Install CosyVoice's requirements, but STRIP its torch/torchaudio pins first. A pip
+#    constraints file can't override an explicit '==' pin — pip treats "requirements wants
+#    torch==2.3.1" + "constraint wants torch==2.7.0" as a hard conflict (ResolutionImpossible).
+#    So we delete those two lines and let the already-installed torch 2.7.0 satisfy the
+#    (loose) torch deps of everything else. transformers==4.51.3 / numpy==1.26.4 stay in the
+#    file and already match what we installed, so they resolve cleanly. Everything else
+#    (tensorrt-cu12, onnxruntime-gpu, conformer, matcha deps, ...) installs normally.
+sed -E '/^(torch|torchaudio)==/d' CosyVoice/requirements.txt > /tmp/cosy_reqs.txt
+.venv/bin/pip install -r /tmp/cosy_reqs.txt
+
+# 3. This test's extras (modelscope, soundfile).
+.venv/bin/pip install -r requirements.txt
 
 echo "== 4/4 download CosyVoice2-0.5B (~2 GB) =="
 .venv/bin/python - <<'PY'
