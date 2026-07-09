@@ -55,25 +55,37 @@ echo "== 3/4 install deps (single env, vLLM-enabled) =="
 # whisper WITHOUT build isolation so it uses that.
 .venv/bin/pip install "setuptools<81" wheel
 
-# 1. vLLM first — pulls torch==2.7.0 exactly once. Pin torchaudio to match (import fails
-#    otherwise). transformers/numpy pinned to the values CosyVoice also needs.
-.venv/bin/pip install vllm==0.9.0 torchaudio==2.7.0 transformers==4.51.3 numpy==1.26.4
+# vLLM 0.9.0 and CosyVoice share three deps that they pin to DIFFERENT versions:
+#   - torch:      vLLM needs ==2.7.0 (also torchvision/xformers/torchaudio); CosyVoice pins 2.3.1
+#   - torchaudio: must match torch (2.7.0)
+#   - pydantic:   vLLM needs >=2.9;  CosyVoice pins ==2.7.0
+# In one env vLLM's versions must win, or vLLM import/runtime breaks. The trap we hit: if
+# CosyVoice's requirements install runs with those pins intact, it silently DOWNGRADES torch
+# to 2.3.1 and pydantic to 2.7.0, and a later stripped install won't put them back (the
+# stripped file no longer names them). So we STRIP those three from CosyVoice's requirements
+# AND re-assert vLLM's versions on every command line below, so no resolution can move them.
+
+# 1. vLLM + the three contested deps, pinned to vLLM's needs. Installs torch 2.7.0 once.
+.venv/bin/pip install vllm==0.9.0 torch==2.7.0 torchaudio==2.7.0 "pydantic>=2.9" \
+                      transformers==4.51.3 numpy==1.26.4
 
 # whisper now that torch is present (no-build-isolation avoids the pkg_resources failure).
 .venv/bin/pip install --no-build-isolation openai-whisper==20231117
 
-# 2. Install CosyVoice's requirements, but STRIP its torch/torchaudio pins first. A pip
-#    constraints file can't override an explicit '==' pin — pip treats "requirements wants
-#    torch==2.3.1" + "constraint wants torch==2.7.0" as a hard conflict (ResolutionImpossible).
-#    So we delete those two lines and let the already-installed torch 2.7.0 satisfy the
-#    (loose) torch deps of everything else. transformers==4.51.3 / numpy==1.26.4 stay in the
-#    file and already match what we installed, so they resolve cleanly. Everything else
-#    (tensorrt-cu12, onnxruntime-gpu, conformer, matcha deps, ...) installs normally.
-sed -E '/^(torch|torchaudio)==/d' CosyVoice/requirements.txt > /tmp/cosy_reqs.txt
-.venv/bin/pip install -r /tmp/cosy_reqs.txt
+# 2. CosyVoice's requirements with the three contested pins removed, and torch/torchaudio/
+#    pydantic re-asserted on the command line so a transitive dep can't pull torch back to an
+#    older version. Everything else (tensorrt-cu12, onnxruntime-gpu, conformer, matcha deps,
+#    ...) installs normally; transformers/numpy already match and resolve cleanly.
+sed -E '/^(torch|torchaudio|pydantic)==/d' CosyVoice/requirements.txt > /tmp/cosy_reqs.txt
+.venv/bin/pip install torch==2.7.0 torchaudio==2.7.0 "pydantic>=2.9" -r /tmp/cosy_reqs.txt
 
 # 3. This test's extras (modelscope, soundfile).
 .venv/bin/pip install -r requirements.txt
+
+# 4. Sanity check: the env is only useful if torch 2.7.0 + vLLM import together on CUDA.
+.venv/bin/python -c "import torch, torchaudio, vllm; \
+print('OK torch', torch.__version__, 'torchaudio', torchaudio.__version__, \
+'vllm', vllm.__version__, 'cuda', torch.cuda.is_available())"
 
 echo "== 4/4 download CosyVoice2-0.5B (~2 GB) =="
 .venv/bin/python - <<'PY'

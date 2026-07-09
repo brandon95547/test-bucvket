@@ -82,6 +82,15 @@ def main() -> None:
     prompt_text = REF_TXT.read_text().strip()  # CosyVoice conditions on this; match the clip
     input_text = " ".join(INPUT_TXT.read_text().split())
 
+    # CosyVoice2's LLM is a CUSTOM vLLM architecture — it must be registered with vLLM's
+    # ModelRegistry BEFORE the engine loads, or vLLM errors with "Cannot find model module
+    # 'CosyVoice2ForCausalLM'". (upstream vllm_example.py does this too.) Only import vLLM
+    # when actually using it, so the non-vLLM path has no vLLM dependency.
+    if USE_VLLM:
+        from vllm import ModelRegistry  # noqa: E402
+        from cosyvoice.vllm.cosyvoice2 import CosyVoice2ForCausalLM  # noqa: E402
+        ModelRegistry.register_model("CosyVoice2ForCausalLM", CosyVoice2ForCausalLM)
+
     print(f"[cosy] loading CosyVoice2 from {MODEL_DIR} "
           f"(fp16={USE_FP16}, vllm={USE_VLLM}, trt={USE_TRT}) ...")
     # fp16: CosyVoice's recommended GPU precision — ~2x less memory bandwidth for the batch-1
