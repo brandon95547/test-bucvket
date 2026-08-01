@@ -1,0 +1,1325 @@
+{
+  "source": "57 Petersham Road Feb. 23, '40.\n\nYours of Feb. 18 to hand this A.M.\n\nRe partners. Most important never to divulge your business. They never understand. But I think all payments to G.M.C. should be credited to your O.T.O. interests esp. in California where both Smith and Mas S. have acquired-properties, which will be very useful for your vieuz jours (and mine, if I can ever get out there!) I want very much to go over and devlop these. As soon as I can do so, I can put the O.T.O. really on its feet again; for my presence and personality and literary & dramatic connexions should enable me to conquer Hollywood. (I can't send photos of the properties because of the censor. But they look very promising.) ---\n\nNewton has been away ill. I see him Monday, I hope. He has capitalists in Belgium. So if I can talk him into it, you might be able to explain your proposition to the man on the spot, and start immediately. ---\n\nI'm in trouble here. My Trust Fund has got cold feet, so that I can't count on my weekly \u00a32. I had to put your cheque through in consequence. Normally, though, I'm quite o.k. personally. But in order to push the Tarot I shall have to renew my wardrobe, at least one suit, amd some underclothes. This will cost about \u00a330. Then, of course, the printer. I shall probably have to be content with a one-page war poem for March 21. But please remember that even the smallest cheque makes all the difference between staying idle and dashing about to put business through.\n\nP.S. Sorry if this letter seems gloomy. But I have been rather sick, and still don't feel too gay. I'm worried about the Tarot: we are so near to the end - and it's the biggest work of my whole life - that I can't help wondering if some 'tuile' isn't going to drop! I suppose that's liver too.",
+  "provenance": "corrected transcription supplied via --source-text (source_corrected.txt)",
+  "ocr_confidence": 100.0,
+  "ocr_gate": 85.0,
+  "lexical_validity": 98.12206572769952,
+  "lexical_gate": 95.0,
+  "lexical_offenders": [
+    "devlop",
+    "jours",
+    "tuile'",
+    "vieuz"
+  ],
+  "ocr_gate_bypassed": false,
+  "runtime": {
+    "whisper_model": "medium.en",
+    "device": "cpu",
+    "compute_type": "int8",
+    "device_reason": "auto: no CUDA device visible to CTranslate2",
+    "beam_size": 5,
+    "vad_filter": false,
+    "language": "en",
+    "embed_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "embed_device": "cpu",
+    "cuda_devices_visible": 0
+  },
+  "claims": [
+    {
+      "idx": 0,
+      "text": "57 Petersham Road Feb. 23, '40.",
+      "numbers": [
+        "23",
+        "40",
+        "57"
+      ],
+      "entities": [
+        "FEB",
+        "PETERSHAM",
+        "ROAD"
+      ],
+      "status": "missing",
+      "best_emb": 0.19610118865966797,
+      "best_lex": 0.0,
+      "best_lesson": "04 - Ambition Conquering Hollywood",
+      "best_unit": "The author mentions a person named Newton, who has been away ill, but will be seen on Monday.",
+      "lessons_covering": [],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 1,
+      "text": "Yours of Feb. 18 to hand this A.M.",
+      "numbers": [
+        "18"
+      ],
+      "entities": [
+        "FEB",
+        "YOURS"
+      ],
+      "status": "missing",
+      "best_emb": 0.29192981123924255,
+      "best_lex": 0.0,
+      "best_lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "best_unit": "We are so near to the end.",
+      "lessons_covering": [],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 2,
+      "text": "Re partners.",
+      "numbers": [],
+      "entities": [],
+      "status": "partial",
+      "best_emb": 0.49741330742836,
+      "best_lex": 0.28571428571428575,
+      "best_lesson": "02 - Partnerships and Confidentiality",
+      "best_unit": "The author explains that partners never understand. This is presented as essential guidance, keep your own affairs and plans private, even when working with others.",
+      "lessons_covering": [],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 3,
+      "text": "Most important never to divulge your business.",
+      "numbers": [],
+      "entities": [],
+      "status": "covered",
+      "best_emb": 0.759003221988678,
+      "best_lex": 0.6,
+      "best_lesson": "02 - Partnerships and Confidentiality",
+      "best_unit": "The key point is this, never divulge your business to partners.",
+      "lessons_covering": [
+        "02 - Partnerships and Confidentiality"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 4,
+      "text": "They never understand.",
+      "numbers": [],
+      "entities": [],
+      "status": "covered",
+      "best_emb": 0.5989298820495605,
+      "best_lex": 0.5714285714285715,
+      "best_lesson": "02 - Partnerships and Confidentiality",
+      "best_unit": "The author explains that partners never understand.",
+      "lessons_covering": [
+        "02 - Partnerships and Confidentiality"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 5,
+      "text": "But I think all payments to G.M.C. should be credited to your O.T.O. interests esp. in California where both Smith and Mas S. have acquired-properties",
+      "numbers": [],
+      "entities": [
+        "CALIFORNIA",
+        "GMC",
+        "MAS",
+        "OTO",
+        "SMITH"
+      ],
+      "status": "partial",
+      "best_emb": 0.7608346939086914,
+      "best_lex": 0.4347826086956522,
+      "best_lesson": "04 - Ambition Conquering Hollywood",
+      "best_unit": "Furthermore, he instructs that all payments to G.M.R. should be credited to your O.T.O. interests, especially in California, tying financial support directly to the O.T.O. expansion.",
+      "lessons_covering": [
+        "04 - Ambition Conquering Hollywood"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": [
+        "GMC"
+      ]
+    },
+    {
+      "idx": 6,
+      "text": "which will be very useful for your vieuz jours (and mine, if I can ever get out there!) I want very much to go over and devlop these.",
+      "numbers": [],
+      "entities": [],
+      "status": "missing",
+      "best_emb": 0.22291938960552216,
+      "best_lex": 0.1818181818181818,
+      "best_lesson": "02 - Partnerships and Confidentiality",
+      "best_unit": "Both Smith and Mosses have acquired properties there, which will be very useful for visits. The author expresses a strong desire to go over and develop these properties.",
+      "lessons_covering": [],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 7,
+      "text": "As soon as I can do so, I can put the O.T.O. really on its feet again",
+      "numbers": [],
+      "entities": [
+        "OTO"
+      ],
+      "status": "covered",
+      "best_emb": 0.5886743068695068,
+      "best_lex": 0.8,
+      "best_lesson": "04 - Ambition Conquering Hollywood",
+      "best_unit": "As soon as he can get out to develop these, he can put the O.T.O. really on its feet again.",
+      "lessons_covering": [
+        "02 - Partnerships and Confidentiality",
+        "04 - Ambition Conquering Hollywood"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 8,
+      "text": "for my presence and personality and literary & dramatic connexions should enable me to conquer Hollywood.",
+      "numbers": [],
+      "entities": [
+        "HOLLYWOOD"
+      ],
+      "status": "covered",
+      "best_emb": 0.7770684957504272,
+      "best_lex": 0.823529411764706,
+      "best_lesson": "02 - Partnerships and Confidentiality",
+      "best_unit": "The reasoning is that their presence, personality, and literary or dramatic connections should enable them to conquer Hollywood.",
+      "lessons_covering": [
+        "02 - Partnerships and Confidentiality",
+        "04 - Ambition Conquering Hollywood"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 9,
+      "text": "(I can't send photos of the properties because of the censor.",
+      "numbers": [],
+      "entities": [],
+      "status": "covered",
+      "best_emb": 0.8789669871330261,
+      "best_lex": 0.4615384615384615,
+      "best_lesson": "02 - Partnerships and Confidentiality",
+      "best_unit": "The author notes that photos of the properties cannot be sent because of the censor, but they look very promising.",
+      "lessons_covering": [
+        "02 - Partnerships and Confidentiality"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 10,
+      "text": "But they look very promising.)",
+      "numbers": [],
+      "entities": [],
+      "status": "partial",
+      "best_emb": 0.2894507050514221,
+      "best_lex": 0.4,
+      "best_lesson": "02 - Partnerships and Confidentiality",
+      "best_unit": "The author notes that photos of the properties cannot be sent because of the censor, but they look very promising.",
+      "lessons_covering": [],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 11,
+      "text": "Newton has been away ill.",
+      "numbers": [],
+      "entities": [
+        "NEWTON"
+      ],
+      "status": "covered",
+      "best_emb": 0.7014105916023254,
+      "best_lex": 0.5,
+      "best_lesson": "04 - Ambition Conquering Hollywood",
+      "best_unit": "The author mentions a person named Newton, who has been away ill, but will be seen on Monday.",
+      "lessons_covering": [
+        "04 - Ambition Conquering Hollywood"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 12,
+      "text": "I see him Monday, I hope.",
+      "numbers": [],
+      "entities": [
+        "MONDAY"
+      ],
+      "status": "partial",
+      "best_emb": 0.46122410893440247,
+      "best_lex": 0.16666666666666666,
+      "best_lesson": "04 - Ambition Conquering Hollywood",
+      "best_unit": "The author mentions a person named Newton, who has been away ill, but will be seen on Monday.",
+      "lessons_covering": [],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 13,
+      "text": "He has capitalists in Belgium.",
+      "numbers": [],
+      "entities": [
+        "BELGIUM"
+      ],
+      "status": "covered",
+      "best_emb": 0.802101194858551,
+      "best_lex": 0.8,
+      "best_lesson": "04 - Ambition Conquering Hollywood",
+      "best_unit": "Newton has capitalists in Belgium.",
+      "lessons_covering": [
+        "04 - Ambition Conquering Hollywood"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 14,
+      "text": "So if I can talk him into it, you might be able to explain your proposition to the man on the spot, and start immediately.",
+      "numbers": [],
+      "entities": [],
+      "status": "partial",
+      "best_emb": 0.40820127725601196,
+      "best_lex": 0.5454545454545455,
+      "best_lesson": "04 - Ambition Conquering Hollywood",
+      "best_unit": "The author hopes to talk Newton into allowing the recipient to explain a proposition directly to that capitalist on the spot, so they can start immediately.",
+      "lessons_covering": [],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 15,
+      "text": "I'm in trouble here.",
+      "numbers": [],
+      "entities": [],
+      "status": "missing",
+      "best_emb": 0.24179159104824066,
+      "best_lex": 0.3333333333333333,
+      "best_lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "best_unit": "He writes, I'm worried about the tarot.",
+      "lessons_covering": [],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 16,
+      "text": "My Trust Fund has got cold feet, so that I can't count on my weekly \u00a32.",
+      "numbers": [
+        "2"
+      ],
+      "entities": [
+        "FUND",
+        "TRUST"
+      ],
+      "status": "partial",
+      "best_emb": 0.7525462508201599,
+      "best_lex": 0.9411764705882353,
+      "best_lesson": "01 - Foundations Financial Instability",
+      "best_unit": "He says, My trust fund has got cold feet so that I can't count on my weekly.",
+      "lessons_covering": [
+        "01 - Foundations Financial Instability"
+      ],
+      "dropped_numbers": [
+        "2"
+      ],
+      "dropped_entities": []
+    },
+    {
+      "idx": 17,
+      "text": "I had to put your cheque through in consequence.",
+      "numbers": [],
+      "entities": [],
+      "status": "partial",
+      "best_emb": 0.45983296632766724,
+      "best_lex": 0.30769230769230765,
+      "best_lesson": "01 - Foundations Financial Instability",
+      "best_unit": "He adds that he had to put a check through in consequence, indicating he was forced to use other funds to cover his needs.",
+      "lessons_covering": [],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 18,
+      "text": "Normally, though, I'm quite o.k. personally.",
+      "numbers": [],
+      "entities": [
+        "NORMALLY"
+      ],
+      "status": "missing",
+      "best_emb": 0.2536609470844269,
+      "best_lex": 0.22222222222222224,
+      "best_lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "best_unit": "He says that plainly, it's the biggest work of my whole life.",
+      "lessons_covering": [],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 19,
+      "text": "But in order to push the Tarot I shall have to renew my wardrobe, at least one suit, amd some underclothes.",
+      "numbers": [
+        "1"
+      ],
+      "entities": [
+        "TAROT"
+      ],
+      "status": "covered",
+      "best_emb": 0.9585798978805542,
+      "best_lex": 0.9473684210526316,
+      "best_lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "best_unit": "In order to push the tarot, I shall have to renew my wardrobe, at least one suit and some underclothes.",
+      "lessons_covering": [
+        "01 - Foundations Financial Instability",
+        "03 - The Tarot Crowley's Magnum Opus",
+        "04 - Ambition Conquering Hollywood"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 20,
+      "text": "This will cost about \u00a330.",
+      "numbers": [
+        "30"
+      ],
+      "entities": [],
+      "status": "covered",
+      "best_emb": 0.6727127432823181,
+      "best_lex": 0.5714285714285715,
+      "best_lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "best_unit": "This will cost about thirty pounds.",
+      "lessons_covering": [
+        "01 - Foundations Financial Instability",
+        "03 - The Tarot Crowley's Magnum Opus"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 21,
+      "text": "Then, of course, the printer.",
+      "numbers": [],
+      "entities": [],
+      "status": "covered",
+      "best_emb": 0.9871286153793335,
+      "best_lex": 1.0,
+      "best_lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "best_unit": "Then of course, the printer.",
+      "lessons_covering": [
+        "01 - Foundations Financial Instability",
+        "03 - The Tarot Crowley's Magnum Opus"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 22,
+      "text": "I shall probably have to be content with a one-page war poem for March 21.",
+      "numbers": [
+        "1",
+        "21"
+      ],
+      "entities": [
+        "MARCH"
+      ],
+      "status": "missing",
+      "best_emb": 0.35284045338630676,
+      "best_lex": 0.11764705882352941,
+      "best_lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "best_unit": "This session draws on a letter written by Aleister Crowley.",
+      "lessons_covering": [],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 23,
+      "text": "But please remember that even the smallest cheque makes all the difference between staying idle and dashing about to put business through.",
+      "numbers": [],
+      "entities": [],
+      "status": "covered",
+      "best_emb": 0.6978368759155273,
+      "best_lex": 0.7826086956521738,
+      "best_lesson": "01 - Foundations Financial Instability",
+      "best_unit": "He writes, Even the smallest check makes all the difference between staying idle and dashing about to put business through.",
+      "lessons_covering": [
+        "01 - Foundations Financial Instability",
+        "04 - Ambition Conquering Hollywood"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 24,
+      "text": "Sorry if this letter seems gloomy.",
+      "numbers": [],
+      "entities": [
+        "SORRY"
+      ],
+      "status": "missing",
+      "best_emb": 0.3525056540966034,
+      "best_lex": 0.2,
+      "best_lesson": "04 - Ambition Conquering Hollywood",
+      "best_unit": "Second, the letter shows how connections are used to achieve goals. The author mentions a person named Newton, who has been away ill, but will be seen on Monday.",
+      "lessons_covering": [],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 25,
+      "text": "But I have been rather sick, and still don't feel too gay.",
+      "numbers": [],
+      "entities": [],
+      "status": "missing",
+      "best_emb": 0.2809000313282013,
+      "best_lex": 0.16666666666666666,
+      "best_lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "best_unit": "He even wondered if his worry was simply due to feeling unwell.",
+      "lessons_covering": [],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 26,
+      "text": "I'm worried about the Tarot: we are so near to the end",
+      "numbers": [],
+      "entities": [
+        "TAROT"
+      ],
+      "status": "covered",
+      "best_emb": 0.8720425367355347,
+      "best_lex": 0.9090909090909091,
+      "best_lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "best_unit": "He writes, I'm worried about the tarot. We are so near to the end.",
+      "lessons_covering": [
+        "03 - The Tarot Crowley's Magnum Opus"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 27,
+      "text": "and it's the biggest work of my whole life",
+      "numbers": [],
+      "entities": [],
+      "status": "covered",
+      "best_emb": 0.7261132001876831,
+      "best_lex": 0.8333333333333333,
+      "best_lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "best_unit": "He says that plainly, it's the biggest work of my whole life.",
+      "lessons_covering": [
+        "01 - Foundations Financial Instability",
+        "03 - The Tarot Crowley's Magnum Opus"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 28,
+      "text": "that I can't help wondering if some 'tuile' isn't going to drop!",
+      "numbers": [],
+      "entities": [],
+      "status": "covered",
+      "best_emb": 0.3014923632144928,
+      "best_lex": 0.631578947368421,
+      "best_lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "best_unit": "And it's the biggest work of my whole life that I can't help wondering if some trick isn't going to drop.",
+      "lessons_covering": [
+        "03 - The Tarot Crowley's Magnum Opus"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    },
+    {
+      "idx": 29,
+      "text": "I suppose that's liver too.",
+      "numbers": [],
+      "entities": [],
+      "status": "covered",
+      "best_emb": 1.000000238418579,
+      "best_lex": 1.0,
+      "best_lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "best_unit": "I suppose that's liver too.",
+      "lessons_covering": [
+        "03 - The Tarot Crowley's Magnum Opus"
+      ],
+      "dropped_numbers": [],
+      "dropped_entities": []
+    }
+  ],
+  "units": [
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 0,
+      "text": "In this lesson, we explore the foundations of financial instability as experienced by the writer during a critical period.",
+      "scaffold": true,
+      "best_claim": 16,
+      "best_emb": 0.24648503959178925,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 1,
+      "text": "The source material comes from a letter dated 23rd February 1940, where he discusses his financial troubles and their impact on his Tarot project.",
+      "scaffold": true,
+      "best_claim": 26,
+      "best_emb": 0.27644041180610657,
+      "ungrounded_numbers": [
+        "1940"
+      ],
+      "ungrounded_entities": [
+        "FEBRUARY"
+      ]
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 2,
+      "text": "First, the writer reveals that his trust fund had become unreliable.",
+      "scaffold": true,
+      "best_claim": 16,
+      "best_emb": 0.41909873485565186,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 3,
+      "text": "He says, My trust fund has got cold feet so that I can't count on my weekly.",
+      "scaffold": true,
+      "best_claim": 16,
+      "best_emb": 0.7525462508201599,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 4,
+      "text": "This meant he could no longer rely on a steady income from that source.",
+      "scaffold": false,
+      "best_claim": 13,
+      "best_emb": 0.3388546109199524,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 5,
+      "text": "He adds that he had to put a check through in consequence, indicating he was forced to use other funds to cover his needs.",
+      "scaffold": false,
+      "best_claim": 17,
+      "best_emb": 0.45983296632766724,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 6,
+      "text": "Second, he emphasizes how even a small check could make a significant difference.",
+      "scaffold": true,
+      "best_claim": 23,
+      "best_emb": 0.49114134907722473,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 7,
+      "text": "He writes, Even the smallest check makes all the difference between staying idle and dashing about to put business through.",
+      "scaffold": true,
+      "best_claim": 23,
+      "best_emb": 0.6978368759155273,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 8,
+      "text": "In other words, a modest influx of funds could shift him from inaction to actively pursuing his goals.",
+      "scaffold": true,
+      "best_claim": 13,
+      "best_emb": 0.35260164737701416,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 9,
+      "text": "Third, the financial need for the Tarot project is apparent.",
+      "scaffold": true,
+      "best_claim": 26,
+      "best_emb": 0.5377901196479797,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 10,
+      "text": "He states he is worried about the Tarot and calls it the biggest work of my whole life.",
+      "scaffold": true,
+      "best_claim": 26,
+      "best_emb": 0.5613022446632385,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 11,
+      "text": "To push it forward, he says, I shall have to renew my wardrobe at least one suit and some underclothes.",
+      "scaffold": false,
+      "best_claim": 19,
+      "best_emb": 0.7386472225189209,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 12,
+      "text": "This will cost about 30 pounds, then of course the printer.",
+      "scaffold": false,
+      "best_claim": 21,
+      "best_emb": 0.5891062617301941,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 13,
+      "text": "These specific expenses highlight the financial requirements for completing and promoting the Tarot.",
+      "scaffold": false,
+      "best_claim": 19,
+      "best_emb": 0.4428198039531708,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 14,
+      "text": "To recapat, the writer faced financial instability because his trust fund became unreliable.",
+      "scaffold": true,
+      "best_claim": 16,
+      "best_emb": 0.32755011320114136,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 15,
+      "text": "He stressed that even a small check could make the difference between idleness and active work.",
+      "scaffold": false,
+      "best_claim": 23,
+      "best_emb": 0.455088347196579,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 16,
+      "text": "Finally, he detailed the financial needs for his Tarot project, including wardrobe and printing costs.",
+      "scaffold": true,
+      "best_claim": 19,
+      "best_emb": 0.45122531056404114,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "01 - Foundations Financial Instability",
+      "idx": 17,
+      "text": "These factors combine to create a foundation of financial uncertainty during this period.",
+      "scaffold": false,
+      "best_claim": 23,
+      "best_emb": 0.2583906352519989,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "02 - Partnerships and Confidentiality",
+      "idx": 0,
+      "text": "This lesson is about partnerships and confidentiality, drawn from a letter written in February 1940.",
+      "scaffold": true,
+      "best_claim": 2,
+      "best_emb": 0.38919797539711,
+      "ungrounded_numbers": [
+        "1940"
+      ],
+      "ungrounded_entities": [
+        "FEBRUARY"
+      ]
+    },
+    {
+      "lesson": "02 - Partnerships and Confidentiality",
+      "idx": 1,
+      "text": "The author gives direct advice on how to handle business with partners, and then connects that advice to specific opportunities in California.",
+      "scaffold": false,
+      "best_claim": 2,
+      "best_emb": 0.4378265142440796,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "02 - Partnerships and Confidentiality",
+      "idx": 2,
+      "text": "The key point is this, never divulge your business to partners.",
+      "scaffold": true,
+      "best_claim": 3,
+      "best_emb": 0.759003221988678,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "02 - Partnerships and Confidentiality",
+      "idx": 3,
+      "text": "The author explains that partners never understand.",
+      "scaffold": true,
+      "best_claim": 4,
+      "best_emb": 0.5989298820495605,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "02 - Partnerships and Confidentiality",
+      "idx": 4,
+      "text": "This is presented as essential guidance, keep your own affairs and plans private, even when working with others.",
+      "scaffold": false,
+      "best_claim": 3,
+      "best_emb": 0.5091467499732971,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "02 - Partnerships and Confidentiality",
+      "idx": 5,
+      "text": "The author then ties this to current OTO interests, particularly in California.",
+      "scaffold": false,
+      "best_claim": 5,
+      "best_emb": 0.35017162561416626,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "02 - Partnerships and Confidentiality",
+      "idx": 6,
+      "text": "Both Smith and Mosses have acquired properties there, which will be very useful for visits.",
+      "scaffold": false,
+      "best_claim": 5,
+      "best_emb": 0.3874785304069519,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": [
+        "MOSSES"
+      ]
+    },
+    {
+      "lesson": "02 - Partnerships and Confidentiality",
+      "idx": 7,
+      "text": "The author expresses a strong desire to go over and develop these properties.",
+      "scaffold": false,
+      "best_claim": 9,
+      "best_emb": 0.29382988810539246,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "02 - Partnerships and Confidentiality",
+      "idx": 8,
+      "text": "As soon as that is possible, the author believes they can put the OTO really on its feet again.",
+      "scaffold": false,
+      "best_claim": 7,
+      "best_emb": 0.5181608200073242,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "02 - Partnerships and Confidentiality",
+      "idx": 9,
+      "text": "The reasoning is that their presence, personality, and literary or dramatic connections should enable them to conquer Hollywood.",
+      "scaffold": false,
+      "best_claim": 8,
+      "best_emb": 0.7206116318702698,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "02 - Partnerships and Confidentiality",
+      "idx": 10,
+      "text": "The author notes that photos of the properties cannot be sent because of the censor, but they look very promising.",
+      "scaffold": true,
+      "best_claim": 9,
+      "best_emb": 0.8789669871330261,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "02 - Partnerships and Confidentiality",
+      "idx": 11,
+      "text": "To recap, the core message is to keep your business private from partners, as they will not understand.",
+      "scaffold": true,
+      "best_claim": 3,
+      "best_emb": 0.5024510622024536,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "02 - Partnerships and Confidentiality",
+      "idx": 12,
+      "text": "At the same time, the author highlights that in California, partners Smith and Mosses have acquired OTO properties that are intended for visits and development.",
+      "scaffold": false,
+      "best_claim": 5,
+      "best_emb": 0.5084359645843506,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": [
+        "MOSSES"
+      ]
+    },
+    {
+      "lesson": "02 - Partnerships and Confidentiality",
+      "idx": 13,
+      "text": "With the goal of revitalizing the organization through the author's own efforts and connections,",
+      "scaffold": false,
+      "best_claim": 2,
+      "best_emb": 0.34993407130241394,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 0,
+      "text": "This session draws on a letter written by Aleister Crowley.",
+      "scaffold": true,
+      "best_claim": 22,
+      "best_emb": 0.35284045338630676,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": [
+        "ALEISTER",
+        "CROWLEY"
+      ]
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 1,
+      "text": "In it he speaks directly about the tarot project that consumed him.",
+      "scaffold": false,
+      "best_claim": 26,
+      "best_emb": 0.4952007830142975,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 2,
+      "text": "The tarot was the biggest work of his whole life.",
+      "scaffold": false,
+      "best_claim": 26,
+      "best_emb": 0.5264299511909485,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 3,
+      "text": "He says that plainly, it's the biggest work of my whole life.",
+      "scaffold": true,
+      "best_claim": 27,
+      "best_emb": 0.7261132001876831,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 4,
+      "text": "Not just a big project, but the biggest.",
+      "scaffold": false,
+      "best_claim": 27,
+      "best_emb": 0.47325778007507324,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 5,
+      "text": "That is the scale he assigned to it.",
+      "scaffold": true,
+      "best_claim": 21,
+      "best_emb": 0.24702045321464539,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 6,
+      "text": "Yet he was deeply worried about its completion.",
+      "scaffold": false,
+      "best_claim": 26,
+      "best_emb": 0.2983528673648834,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 7,
+      "text": "He writes, I'm worried about the tarot.",
+      "scaffold": true,
+      "best_claim": 26,
+      "best_emb": 0.7795799970626831,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 8,
+      "text": "We are so near to the end.",
+      "scaffold": false,
+      "best_claim": 26,
+      "best_emb": 0.5737375020980835,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 9,
+      "text": "And it's the biggest work of my whole life that I can't help wondering if some trick isn't going to drop.",
+      "scaffold": false,
+      "best_claim": 27,
+      "best_emb": 0.6296009421348572,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 10,
+      "text": "He feared that some last minute obstacle, some trick, would prevent the work from being finished.",
+      "scaffold": false,
+      "best_claim": 11,
+      "best_emb": 0.23723557591438293,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 11,
+      "text": "He even wondered if his worry was simply due to feeling unwell.",
+      "scaffold": false,
+      "best_claim": 11,
+      "best_emb": 0.31320327520370483,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 12,
+      "text": "I suppose that's liver too.",
+      "scaffold": false,
+      "best_claim": 29,
+      "best_emb": 1.0000001192092896,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 13,
+      "text": "But the anxiety was real.",
+      "scaffold": false,
+      "best_claim": 27,
+      "best_emb": 0.23313362896442413,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 14,
+      "text": "To push the tarot through, he needed practical things specifically.",
+      "scaffold": false,
+      "best_claim": 26,
+      "best_emb": 0.5126420259475708,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 15,
+      "text": "In order to push the tarot, I shall have to renew my wardrobe, at least one suit and some underclothes.",
+      "scaffold": false,
+      "best_claim": 19,
+      "best_emb": 0.9585798978805542,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 16,
+      "text": "This will cost about thirty pounds.",
+      "scaffold": false,
+      "best_claim": 20,
+      "best_emb": 0.6727128028869629,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 17,
+      "text": "Then of course, the printer.",
+      "scaffold": false,
+      "best_claim": 21,
+      "best_emb": 0.9871285557746887,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 18,
+      "text": "So two concrete needs, a new set of clothes to present himself properly, and a printer to produce the actual deck or book.",
+      "scaffold": false,
+      "best_claim": 21,
+      "best_emb": 0.374566912651062,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 19,
+      "text": "To recap, the tarot was Crowley's magnum opus, the biggest work of his life.",
+      "scaffold": true,
+      "best_claim": 26,
+      "best_emb": 0.46820947527885437,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": [
+        "CROWLEY"
+      ]
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 20,
+      "text": "He was worried it might be sabotaged, just as it neared the end, and he required both a refreshed wardrobe and a printer to bring it to completion.",
+      "scaffold": false,
+      "best_claim": 21,
+      "best_emb": 0.4535839855670929,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "03 - The Tarot Crowley's Magnum Opus",
+      "idx": 21,
+      "text": "These are the only facts about this project that appear in the source material.",
+      "scaffold": true,
+      "best_claim": 9,
+      "best_emb": 0.2503392994403839,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 0,
+      "text": "In this lesson, we explore how ambition drives the plan to conquer Hollywood for the O.T.O.",
+      "scaffold": true,
+      "best_claim": 8,
+      "best_emb": 0.6014740467071533,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 1,
+      "text": "Drawing directly from personal correspondence, we learn about the role of presence, the use of connections, and the intertwining of the tarot project with O.T.O. ambitions.",
+      "scaffold": true,
+      "best_claim": 8,
+      "best_emb": 0.3468511402606964,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 2,
+      "text": "First, the author states that his own presence and personality, together with his literary and dramatic connections, should enable him to conquer Hollywood.",
+      "scaffold": true,
+      "best_claim": 8,
+      "best_emb": 0.7441698312759399,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 3,
+      "text": "This is the core of the plan, using his personal charisma and existing network in the creative industries to establish the O.T.O.",
+      "scaffold": false,
+      "best_claim": 7,
+      "best_emb": 0.2789067327976227,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 4,
+      "text": "In California, he notes that both Smith and Maas have already acquired properties there, which will be very useful for visits.",
+      "scaffold": false,
+      "best_claim": 5,
+      "best_emb": 0.5484725832939148,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 5,
+      "text": "As soon as he can get out to develop these, he can put the O.T.O. really on its feet again.",
+      "scaffold": false,
+      "best_claim": 7,
+      "best_emb": 0.5886743068695068,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 6,
+      "text": "Second, the letter shows how connections are used to achieve goals.",
+      "scaffold": true,
+      "best_claim": 2,
+      "best_emb": 0.2712969481945038,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 7,
+      "text": "The author mentions a person named Newton, who has been away ill, but will be seen on Monday.",
+      "scaffold": false,
+      "best_claim": 11,
+      "best_emb": 0.7014105916023254,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 8,
+      "text": "Newton has capitalists in Belgium.",
+      "scaffold": false,
+      "best_claim": 13,
+      "best_emb": 0.802101194858551,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 9,
+      "text": "The author hopes to talk Newton into allowing the recipient to explain a proposition directly to that capitalist on the spot, so they can start immediately.",
+      "scaffold": false,
+      "best_claim": 11,
+      "best_emb": 0.4240919053554535,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 10,
+      "text": "This illustrates a strategic use of a personal contact to gain access to financial backing.",
+      "scaffold": false,
+      "best_claim": 16,
+      "best_emb": 0.31292930245399475,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 11,
+      "text": "Third, the tarot project is deeply linked with O.T.O. ambitions.",
+      "scaffold": true,
+      "best_claim": 26,
+      "best_emb": 0.511573851108551,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 12,
+      "text": "The author calls the tarot the biggest work of his whole life, and is worried that some trick might prevent its completion.",
+      "scaffold": false,
+      "best_claim": 26,
+      "best_emb": 0.5960574746131897,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 13,
+      "text": "To push the tarot forward, he needs to renew his wardrobe.",
+      "scaffold": false,
+      "best_claim": 19,
+      "best_emb": 0.7475420236587524,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 14,
+      "text": "Beast One suit and some underclothes, costing about 30 pounds, he emphasizes that even the smallest check makes all the difference between staying idle and dashing about to put business through.",
+      "scaffold": false,
+      "best_claim": 23,
+      "best_emb": 0.41399815678596497,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 15,
+      "text": "The tarot is therefore not separate from the O.T.O.",
+      "scaffold": false,
+      "best_claim": 26,
+      "best_emb": 0.5904855132102966,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 16,
+      "text": "Plan.",
+      "scaffold": false,
+      "best_claim": 2,
+      "best_emb": 0.27250435948371887,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 17,
+      "text": "Funding for it enables the author to act.",
+      "scaffold": false,
+      "best_claim": 5,
+      "best_emb": 0.30920687317848206,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 18,
+      "text": "Furthermore, he instructs that all payments to G.M.R. should be credited to your O.T.O. interests, especially in California, tying financial support directly to the O.T.O. expansion.",
+      "scaffold": false,
+      "best_claim": 5,
+      "best_emb": 0.7608346939086914,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": [
+        "GMR"
+      ]
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 19,
+      "text": "To recap, the ambition to conquer Hollywood relies on personal presence and literary dramatic connections.",
+      "scaffold": true,
+      "best_claim": 8,
+      "best_emb": 0.7770684957504272,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    },
+    {
+      "lesson": "04 - Ambition Conquering Hollywood",
+      "idx": 20,
+      "text": "It also depends on using specific contacts like Newton to reach capitalists and the tarot par major life work, financially interwoven with those O.T.O. ambitions requiring even small contributions to keep both projects moving forward.",
+      "scaffold": false,
+      "best_claim": 13,
+      "best_emb": 0.375501424074173,
+      "ungrounded_numbers": [],
+      "ungrounded_entities": []
+    }
+  ],
+  "near_duplicates": [],
+  "durations": {
+    "01 - Foundations Financial Instability": 119.04,
+    "02 - Partnerships and Confidentiality": 102.56,
+    "03 - The Tarot Crowley's Magnum Opus": 116.92,
+    "04 - Ambition Conquering Hollywood": 173.6
+  },
+  "adjudication": null
+}
