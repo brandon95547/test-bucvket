@@ -8,11 +8,11 @@
 
 | Measure | Value |
 | --- | --- |
-| Source statements identified | 565 |
+| Source statements identified | 562 |
 | Fully carried into the audio | 507 (90%) |
-| Carried but with detail dropped | 54 (10%) |
-| Absent from the audio | 4 (1%) |
-| **Content coverage (full + partial)** | **99%** |
+| Carried but with detail dropped | 53 (9%) |
+| Absent from the audio | 2 (0%) |
+| **Content coverage (full + partial)** | **100%** |
 | Source length | 10886 words |
 | Course length | 12172 words |
 | Expansion ratio | 1.1x |
@@ -20,27 +20,39 @@
 | Content sentences with no close source match | 32 |
 | Sentences naming something absent from the source | 30 |
 | Near-duplicate statement pairs across lessons | 38 |
+| **Narration lifted word-for-word from the source** | **46%** |
 
-> **Claude's independent read of coverage: 90%** — Near-complete. The eight lessons carry essentially the whole doctrinal payload of the source — syncretism, the lightwave/Walter Russell material, hue/human, the Christ-oil process step by step, the biblical geography of the body, the pineal gland, the Holy Grail, the four/five planes, astral projection technique, the chakra system (including the hand and foot chakras and the 144,000 petal arithmetic), the hemispheres, 440Hz/Rockefeller, the ether/elements, the electromagnetic-earth and firmament/flat-earth cosmology. What drops out is mostly front matter and a handful of one-line decodings buried in image captions.
+Read the last two rows together. Coverage should be high and lifted should be low; a course that reads the source aloud scores well on the first *because* it scores badly on the second. An expansion ratio near 1.0x is the same warning from the other direction — teaching adds words, copying does not.
+
+<details><summary>3 statement(s) excluded as front matter, not scored</summary>
+
+Attribution, title and copyright boilerplate. A course that omits these has not failed the listener, so they are held out of the coverage numbers above. Score them like any other statement with `--keep-front-matter`.
+
+- `01` HARRY B JOSEPH (REVIVAL OF WISDOM) WORK TITLE: "THE BOOK OF WISDOM" IS REGISTERED WITH UK COPYRIGHT SERVICE.
+- `02` MARKETING, RE-SALE, AND CLAIMING "THE BOOK OF WISDOM" WITHOUT CONSENT WILL RESULT IN VIOLATING THE LEGAL PROTECTION RIGHT, WHICH CAN RESULT IN LEGAL ACTION TOWARDS THE INDIVIDUAL.
+- `12` EVERY IMAGE THE BOOK INCLUDES HAS BEEN CHANGED AND IS NOW CLASSED AS "ARTWORK" UNDER THE COPYRIGHT OF THE AUTHOR OF THE BOOK OF WISDOM.
+
+</details>
+
+> **Claude's independent read of coverage: 80%** — Near-total surface coverage of the document's sentences, but a meaningful share of it does not actually transfer, because this source is a caption-and-diagram book and the narration frequently recites labels without explaining the picture they label. A listener gets the doctrine (Christ oil, chakras, planes, hemispheres, flat-earth firmament cosmology) but not the visual arguments, several correspondence tables, and a few small text items.
+
+> **Is this taught or recited? mixed** — Roughly 46% of the narration sits inside runs of eight or more words lifted verbatim, and the longest runs are not scripture — the 143-word passage on the left brain's analytic purpose, the 109-word hand-chakra axis passage, the 106-word mind-as-frequency-tuner passage and the 72-word toe-grounding passage are all straight transcription of the document's prose. Lessons 4 through 8 are largely that: the source's caption text spoken in page order with connective phrases added. Against that, Lessons 2 and 3 do real authorial work — reassembling the oil process into numbered steps from marginalia, and closing with a synthesis ("So the whole story from the Garden to the Crucifixion is written on the body itself") that appears nowhere in the source. The course therefore sits between the two poles, with the balance tipping toward recitation as the lessons progress.
 
 ## 2. Does the audio carry all the context?
 
-**No — 4 statement(s) from the source never appear in any lesson.**
+**No — 2 statement(s) from the source never appear in any lesson.**
 
 | # | Missing from the course | Closest thing the audio says |
 | --- | --- | --- |
 | 0 | BOOK OF WISDOM AUTHOR | _There is a quote from Walter Russell Lee, Universal One._ (sim 0.38) |
-| 1 | HARRY B JOSEPH (REVIVAL OF WISDOM) WORK TITLE: "THE BOOK OF WISDOM" IS REGISTERED WITH UK COPYRIGHT SERVICE. | _Leonardo da Vinci is symbolizing, as above, so below._ (sim 0.31) |
-| 2 | MARKETING, RE-SALE, AND CLAIMING "THE BOOK OF WISDOM" WITHOUT CONSENT WILL RESULT IN VIOLATING THE LEGAL PROTECTION RIGHT, WHICH CAN RESULT IN LEGAL ACTION TOWARDS THE INDIVIDUAL. | _This is done purposely to keep the pyramid scheme up and running. Meanwhile, the people in…_ (sim 0.34) |
 | 92 | THALAMUS 2. | _The spine contains 33 vertebrae, and once the oil passes all 33 and reaches the optic pell…_ (sim 0.35) |
 
-### Carried, but with specifics dropped (54)
+### Carried, but with specifics dropped (53)
 
 | Source statement | What went missing | Where it landed |
 | --- | --- | --- |
 | AUTHOR: REVIVAL OF WISDOM REVIVALOFWSIDOM REVIVALOFWISDOM3 REVIVALOFWISDOM INTRODUCTION THE BOOK OF WISDOM IS A BOOK CONTAINING ESOTERICISM, OCCULTISM, SYMBOLISM, AND MOST IMPORTANTLY, SYNCRETISM. | — | 04 - Pineal Gland, Holy Grail, and the Planes |
 | ALL OF THE IMAGES IN THIS BOOK HAVE BEEN EDITED, MANIPULATED, AND ATIFICIALLY GENERATED TO AVOID ANY COPYRIGHT CLAIMS. | — | 08 - One Reality, Element Symbols, and Seven Heavens |
-| EVERY IMAGE THE BOOK INCLUDES HAS BEEN CHANGED AND IS NOW CLASSED AS "ARTWORK" UNDER THE COPYRIGHT OF THE AUTHOR OF THE BOOK OF WISDOM. | — | 08 - One Reality, Element Symbols, and Seven Heavens |
 | NOT ONE OF THE IMAGES USED IN THIS BOOK IS BEING USED IN ITS ORIGINAL FORM. | — | 08 - One Reality, Element Symbols, and Seven Heavens |
 | OIL PROCESS: 1-THE CLAUSTRUM (CLAUS=SANTA CLAUSE) PRODUCES THE PSYCHO-PHYSICAL THE BRAIN in the bible is: FLUID WHICH THEN GOES TO THE PINEAL AND PITUITARY GLAND IDA PINGALA -THE UPPER ROOM WHERE JESUS 2-THE PINEAL GLAND ELECTRICALLY CHARGES THE FLUID (MALE/ JOSEPH) MEETS THE 12 DISCIPLES/12 CRANIAL NERVES 3-THE PITUITARY GLAND MAGNETICALLY CHARGES THE FLUID (FEMALE/ MARY) -THE HOLY LAND 4-THEN THE FLUID WILL TRAVEL DOWN THE TWO NERVES, THE IDA WHICH IS -the LAND FLOWING WITH MILK AND HONEY CONNECTED TO THE PITUITARY, AND THEN THE PINGALA WHICH IS CONNECTED -promise land of israel TO THE PINEAL GLAND. | `1`, `4` | 02 - Christ Oil, Brain Anatomy, and Kundalini |
 | MEDICAL SYMBOL -CONSUMING AN ALKALINE DIET -NO CONSUMPTION OF ACIDIC FOODS/FLUIDS THE PINGALA (MASCULINE) CHANNLE IS CONNECTED -NO CONSUMING ALCHOHOL TO THE PINEAL GLAND. -KHUNDALINI MEDITATION -BALANCE ALL CHAKARAS -KEEPING YOUR TOUNGE ON THE TOP OF SUSHUMNA YOUR MOUTH -PROPER BREATHING PSALMS 137:6 MY MY TOUNGE CLING TO THE ROOF OF MY MOUTH IF I DO NOT REMEMBER YOU, IF I DO NOT CONSIDER JERUSALEM MY HIGHEST JOY PINGALA IDA HEAVEN JESUS (THE OIL) IS IN NAZARETH (THE HEAD) WITH JOSEPH AND MARY (THE PINEAL AND PITUITARY RIVER JORDAN= SPINAL CORD GLAND) AND KING HAROD WANTS TO KILL HIM. | — | 02 - Christ Oil, Brain Anatomy, and Kundalini |
@@ -171,32 +183,74 @@ _Fuzzy matching is applied before flagging, so mangled-but-recognisable names ar
 
 ### Adjudicated findings
 
-- **misreading** — _02 - Christ Oil, Brain Anatomy, and Kundalini_: “'The Jordan River is heaven.'”
-  The source has a stray caption 'JORDAN RIVER' next to the word 'HEAVEN' from an adjacent block. The source states unambiguously and repeatedly that 'RIVER JORDAN = SPINAL CORD' — the head is heaven. The audio's sentence directly contradicts the source's own mapping, and Lesson 2 states the correct mapping ('The River Jordan is the spinal cord') only a few sentences earlier, so the listener gets two incompatible claims.
-- **misreading** — _06 - Chakra Balance, Head as Heaven, and Hemispheres_: “'The head corresponds to the mind, the heart to the body, and the heel to the soul.'”
-  The source's three-brain table reads: HEAVEN/HEAD = MENTAL = MIND = GOD; EARTH/HEART = EMOTIONAL = SOUL = JESUS; HELL/HEEL = PHYSICAL = BODY = SATAN. The audio swaps soul and body, so the heel becomes the soul and the heart becomes the body — the exact inversion of a mapping the rest of the course depends on (the heel is elsewhere called the most physical, root-chakra, 'hell' position).
-- **misreading** — _04 - Pineal Gland, Holy Grail, and the Planes_: “'Consciousness is referenced in Chronicles 3 10, and the 33 vertebrae appear again in this context.'”
-  The source's Chronicles 3:10 note says only 'THE MOST HOLY PLACE = THE PINEAL GLAND/CENTRE OF THE BRAIN' and 'TWO CHERUBIM = THE TWO HEMISPHEARS'. The '33 VERDABREA' text nearby is an unrelated floating image label. The audio invents a scriptural link between Chronicles and the vertebrae that the source never makes.
-- **outside knowledge** — _04 - Pineal Gland, Holy Grail, and the Planes_: “'The gland connects to the body through specific pathways, the retino-hypothalamic tract, the suprachiasmatic nucleus, the superior cervical ganglion... These are the physical roots by which light information reaches the gland.'”
-  The source contains only bare diagram labels ('RETINOHYPOTHALAMIC TRACT', 'SUPRACHIAMATIC NUCLEUS', 'SUPERIRIOR CERVICAL GANGLION', 'MELATONIN', 'INHIBITION'). The explanatory sentence describing them as a light-information pathway is neuroanatomy imported from outside the letter and delivered as if it were the source's teaching.
-- **unsupported inference** — _06 - Chakra Balance, Head as Heaven, and Hemispheres_: “After listing the chakra I-statements: 'Those are the feminine and masculine poles of your being.'”
-  The source's I KNOW / I SEE / I SPEAK / I LOVE / I DO / I FEEL / I AM column carries no gender-polarity claim. The masculine/feminine polarity in the source belongs to the hand chakras (ring and little fingers feminine, thumb and index masculine). The audio transplants it onto the spinal chakras.
-- **misreading** — _06 - Chakra Balance, Head as Heaven, and Hemispheres_: “'The head is associated with concentration and meditation, the masculine Solar Yang principle. The heel is associated with contemplation. The Feminine Lunar Yin principle.'”
-  The source has an unstructured caption cluster: 'concentration contemplation meditation / HEAD HEAVEN / masculine femanine solar lunar yang yin / HEEL HELL'. No assignment of concentration or meditation to the head, or contemplation to the heel, is made. The course manufactures a correspondence table out of adjacent words.
-- **unsupported inference** — _03 - Born Again, the Serpent, and the Tree of Life_: “'The Christ oil is named for the 33 years of Christ and the spine has 33 vertebrae.'”
-  The source reverses this causality — '33 VERDABREAS FOR THE 33 YEARS OF CHRIST' and 'CHRISTOS=GREEK FOR OIL. THEN IT BECAME CHRIST'. In the source the oil is named from the Greek christos and the age 33 derives from the vertebrae; the audio has the oil named from the age, inverting the etymological argument the course itself repeats elsewhere.
-- **outside knowledge** — _03 - Born Again, the Serpent, and the Tree of Life_: “'The medical symbol of two serpents, wrapped around the staff, is also this.'”
-  The source says the two serpents are 'WRAPED AROUND THE SPINE' and never mentions a staff or caduceus. The staff is imported general knowledge, and it slightly undercuts the source's point that the central column is the spine, not a rod.
-- **likely transcription artifact** — _01, 03, 06_: “'There is a quote from Walter Russell Lee, Universal One'; 'In Genesis 1 to 3, it says, Ben, let there be light'; 'Matthew 6 22 says, Abbas the light of the body is the eye'; 'John 21 to 6 says, bottle cast the net on the right-hand side'.”
-  'Universal One by Walter Russell' has been mangled into a person named 'Walter Russell Lee', and quotation openers have been rendered as nonsense words ('Ben', 'Abbas', 'bottle', 'bar'). The surrounding sentences track the source verbatim, so these are delivery/STT corruption rather than authoring errors — but they make citations unusable to a listener.
-- **likely transcription artifact** — _02, 05, 06_: “'the quaestrum is Santa Claus' (L2); 'manifest into a Diamon... The word Diamon has the letters M-O-N in it' (L5); 'And note that Amel means God' (L6); 'the Egyptians stated, all is a two, meaning all is Adam, the Taurus field' (L6); 'The Egyptian Jedpila'; 'Neo Tollos from The Matrix'; 'The Rockefeller Foundation, in the 1950 seconds'; 'Deuteronomy 2017'; 'The crown has ten hundred petals'.”
-  Each of these tracks the source exactly (claustrum, daemon, EL=GOD, 'ALL IS ATUM... ALL IS ATOM, THE TORUS FIELD', Djed pillar, Neo, 1950s, Deuteronomy 20:17, crown=1000 petals) but is phonetically corrupted. Several destroy the very wordplay being taught — 'Amel means God' kills the EL=GOD decoding, and 'all is a two... Adam, the Taurus field' kills the Atum/atom/torus pun, which is the entire point of that passage.
-- **likely transcription artifact** — _04 - Pineal Gland, Holy Grail, and the Planes_: “'the word body together has the word either within it. It is joining two planes.'”
-  The source reads 'THE WORD TOGETHER HAS THE WORD ETHER WITHIN IT.' The inserted 'body' and the substitution of 'either' for 'ether' break the etymological demonstration — 'together' does not contain 'either'.
+- **misreading** — _06 - Chakra Balance, Head as Heaven, and Hemispheres_: “The head corresponds to the mind, the heart to the body, and the heel to the soul.”
+  The source table reads HEAVEN/HEAD = MENTAL = MIND = GOD; EARTH/HEART = EMOTIONAL = SOUL = JESUS; HELL/HEEL = PHYSICAL = BODY = SATAN. The narration swaps soul and body, inverting the source's own scheme — and it does so one sentence before correctly saying "These map onto God, Jesus, and Satan," leaving the listener with a self-contradictory mapping.
+- **invented fact** — _06 - Chakra Balance, Head as Heaven, and Hemispheres_: “Each chakra has a corresponding statement of identity... Those are the feminine and masculine poles of your being. And when they mount of whack, your whole frequency drops.”
+  The source lists I KNOW / I SEE / I SPEAK / I LOVE / I DO / I FEEL / I AM beside the chakra column. Nothing in the source describes these statements as feminine and masculine poles, nor says that unbalanced I-statements drop your frequency. The narration also scrambles the pairings ("The root is, but I. The sacral is. I feel the solar plexus. I do the heart, idzu."), so the one list the listener gets is both invented in framing and misaligned in content.
+- **unsupported inference** — _06 - Chakra Balance, Head as Heaven, and Hemispheres_: “The head is associated with concentration and meditation, the masculine Solar Yang principle. The heel is associated with contemplation. The Feminine Lunar Yin principle.”
+  The source page carries only the loose labels "concentration contemplation meditation / HEAD HEAVEN / masculine femanine solar lunar yang yin / HEEL HELL". The course assigns two of the three practices to the head and the third to the heel, and pairs yang with the head and yin with the heel. No such assignment exists in the document.
+- **unsupported inference** — _04 - Pineal Gland, Holy Grail, and the Planes_: “Consciousness is referenced in Chronicles 3 10, and the 33 vertebrae appear again in this context.”
+  In the source, "33 VERDABREA" is a stray page label sitting near the Chronicles 3:10 note; the source makes no connection between the Chronicles passage (most holy place = pineal, two cherubim = hemispheres) and the vertebrae. The narration manufactures a link and then asserts it as if the source drew it.
+- **outside knowledge** — _04 - Pineal Gland, Holy Grail, and the Planes_: “The gland connects to the body through specific pathways, the retino-hypothalamic tract, the suprachiasmatic nucleus, the superior cervical ganglion... These are the physical roots by which light information reaches the gland.”
+  The source only reproduces these terms as scattered labels on an unexplained anatomical diagram (alongside "PINEAL GLAND INHIBITION" and "MELATONIN"). The explanatory sentence — that these constitute the pathway by which light information reaches the gland — is imported physiology, not something the document states.
+- **unsupported inference** — _06 - Chakra Balance, Head as Heaven, and Hemispheres_: “And note that Amel means God, so the name itself carries that divine reference.”
+  The source prints only "EL=GOD" beside the Baphomet page. The narration turns a bare gloss into a claim that the Baphomet's name carries a divine reference, which the source never argues. (The word "Amel" itself is a likely transcription slip for "EL".)
+- **likely transcription artifact** — _01, 03, 06_: “There is a quote from Walter Russell Lee, Universal One... In Genesis 1 to 3, it says, Ben, let there be light... Matthew 6 22 says, Abbas the light of the body is the eye... Neo Tollos from The Matrix... all is a two, meaning all is Adam, the Taurus field... The Egyptian Jedpila represents the central nervous system.”
+  These garbles (Russell's 'Universal One'; the interjections before verses; 'all is Atum, meaning all is atom, the torus field'; the Djed pillar) all track the source sentence-for-sentence and are speech-to-text noise rather than authoring errors — but the 'Atum/atom/torus' pun and the 'Djed pillar' reference are destroyed for the listener, since 'a two / Adam / Taurus' and 'Jedpila' convey nothing.
 
-## 4. Duplication and redundancy
+## 4. Is it taught, or is it read out?
 
-263 of 565 source statements are taught in more than one lesson (47%).
+**45.9% of narrated words sit inside a run of 8+ consecutive words copied from the source** (5,580 of 12,155 words, 345 runs).
+
+| Lesson | Words | Lifted | Longest unbroken run |
+| --- | --- | --- | --- |
+| 01 - Syncretism and the Lightwave Universe | 739 | 54% | 106 words |
+| 02 - Christ Oil, Brain Anatomy, and Kundalini | 907 | 32% | 30 words |
+| 03 - Born Again, the Serpent, and the Tree of Life | 1,467 | 47% | 40 words |
+| 04 - Pineal Gland, Holy Grail, and the Planes | 1,721 | 60% | 66 words |
+| 05 - Astral Plane, Chakras, and the True Self | 1,378 | 48% | 51 words |
+| 06 - Chakra Balance, Head as Heaven, and Hemispheres | 3,403 | 43% | 143 words |
+| 07 - Ether, Moon, and the Light Projection | 2,024 | 42% | 37 words |
+| 08 - One Reality, Element Symbols, and Seven Heavens | 516 | 35% | 31 words |
+
+### Longest passages carried over word-for-word
+
+- **143 words** — _06 - Chakra Balance, Head as Heaven, and Hemispheres_
+  > purpose is to analyze and break down the unified whole presented by the right brain this process is done by the left hemisphere so that we can have distinct singular fragments of reality so that it can manipulate manage and control it both hemispheres are needed for us to function within this creation however we must balance these two aspects of the brain so that we don't become left or right brai…
+- **109 words** — _06 - Chakra Balance, Head as Heaven, and Hemispheres_
+  > up to the middle finger symbolizing the spirit element this central axis serves as a reconciling force for the contrasting gender principles hand chakras serve as a vital interface between the physical and energetic dimensions allowing us to engage with the world on both levels the fingers function as sensitive receptors while the palms act as conduits for channeling healing energy your dominant h…
+- **106 words** — _01 - Syncretism and the Lightwave Universe_
+  > world would cease to exist the mind is spirit the mind is the intellect that manipulates the physical body and the world around us the mind is like a frequency tuner tuning itself into different frequencies the mind exists within the mental plane which is shared between all the minds of the universe thoughts are not created by the individual they are received based on what frequency our mind is se…
+- **72 words** — _06 - Chakra Balance, Head as Heaven, and Hemispheres_
+  > one of the primary functions of the toes is to release and discharge any surplus energy that accumulates within the major chakras through our everyday activities and bodily functions this excess energy is channeled into the earth facilitating a grounding of our consciousness when the minor chakras in the feet operate harmoniously and are in alignment with the major chakras it establishes a continu…
+- **66 words** — _04 - Pineal Gland, Holy Grail, and the Planes_
+  > entities that live amongst us like goblins gnomes and trolls they are entities that have the ability to materialize or stay in the astral body at their will they can choose whether to be physical or non physical this is where we get the myths of trolls fairies gnomes and goblins from they are very secretive beings and do not like to be seen by humans
+- **51 words** — _05 - Astral Plane, Chakras, and the True Self_
+  > etheric body being awakened now imagine yourself pulling a rope up into the sky you may feel yourself being lifted out of the body do not be scared keep doing this exercise until you gain the ability to leave the whole body and discover the astral plane if you do astral
+- **45 words** — _04 - Pineal Gland, Holy Grail, and the Planes_
+  > external teachings this is done purposely to keep the pyramid scheme up and running meanwhile the people in power get taught the esoteric meaning the internal teachings about the body consciousness and the metaphysical aspects of reality the bible is written in such a way
+- **45 words** — _04 - Pineal Gland, Holy Grail, and the Planes_
+  > the mental plane is shared between all the minds that exist it is the world of thoughts thoughts are not created they are received based upon what frequency our mind is set to this is why we call it a mindset each thought topic and
+- **45 words** — _06 - Chakra Balance, Head as Heaven, and Hemispheres_
+  > the body to do so actions of the body are under the command of the centering soul the body is an electrical machine that takes commands from the omnipotent cosmic intelligence to think is to create we create with light nothing is not light the
+- **43 words** — _04 - Pineal Gland, Holy Grail, and the Planes_
+  > when we astral project we are using our mind to project the soul into the astral plane you will only see and encounter beings that are on a similar frequency as you if you operate on a low frequency you will come across
+- **41 words** — _04 - Pineal Gland, Holy Grail, and the Planes_
+  > 20 or do you not know that your body is a temple of the holy spirit within you whom you have from god you are not your own for you were bought with a price so glorify god in your body
+- **41 words** — _05 - Astral Plane, Chakras, and the True Self_
+  > astral projecting when jesus teaches peter to walk on water he is teaching him not to be scared or else you will fall back into the water this is symbolic of when you are astral projecting when you start to fear
+- **40 words** — _03 - Born Again, the Serpent, and the Tree of Life_
+  > the story of jesus is symbolic of the alchemical process that occurs monthly within the human body jesus falls from heaven and incarnates on the earth which is symbolic of the christ oil traveling down the spine from your brain
+- **40 words** — _04 - Pineal Gland, Holy Grail, and the Planes_
+  > the root cause there is no point in looking down here because the physical plane is the world of effect whatever you see and experience is the effect of your mind so look up at the cause change your mind
+- **40 words** — _06 - Chakra Balance, Head as Heaven, and Hemispheres_
+  > both hemispheres participate and contribute to all activities however they do the activity in different ways in other words both brains carry out the same functions but function in two distinct and different ways both brains have separate views and
+
+_Scripture is the honest exception: where the source quotes a verse and the course quotes the same verse, the run above is shared quotation of a third text, not the source's own prose. Check long runs against that before treating them as copying._
+
+## 5. Duplication and redundancy
+
+263 of 562 source statements are taught in more than one lesson (47%).
 
 | Source statement | Repeated in |
 | --- | --- |
@@ -509,16 +563,15 @@ _Fuzzy matching is applied before flagging, so mangled-but-recognisable names ar
 
 ### Adjudicated redundancy
 
-- **The full Christ-oil narrative: oil descends the spine, rests 3 days on the sacrum ('the cave'), kundalini raises it past the 33 vertebrae, crosses the vagus nerve = crucifixion at 33, matter turns to spirit.** (02 (opening and again in the step list), 03 (twice — once at the top under John 3:3, once again in full under 'the alchemical process that occurs monthly')) — **not justified**. The source itself states this three times, so some duplication is inherited. But the course reproduces all of it rather than consolidating: Lesson 3 tells the same story twice within itself, and the second telling adds only the optic-thalamus-as-cross detail. Roughly four full retellings of one narrative across two lessons. One canonical telling plus a one-line callback for the thalamus variant would have carried the same content.
-- **'Head is heaven, same root word HEA' / 'Head and heaven are the same root words' / 'The head is heaven because it is the place of consciousness in the center of the brain.'** (04, 06 (three separate times), 07, 08) — **not justified**. This is the course's thesis, so recurrence is defensible, but it is asserted near-verbatim at least six times with no development. By Lesson 8 ('This is why your head is heaven') it adds nothing a listener has not already heard five times.
-- **'Thoughts are not created; they are received based upon what frequency our mind is set to. This is why we call it a mindset.'** (01, 04, and echoed in 06 ('Your mind sets itself to various frequencies')) — justified. The source states this twice itself (under HUMAN and under MENTAL PLANE), and the Lesson 4 restatement genuinely does different work — it is establishing the mental plane rather than the nature of the mind. Acceptable spaced repetition.
-- **'Ether is where we get the word either' / 'the ether has one foot in the physical world and one foot in the astral'.** (04, 05, 07) — **not justified**. Three near-identical statements of a single etymological gag. Lesson 7 opens with it again as if new ('In fact, the word aether is literally the word either'), which is padding given Lesson 4 already ran the Manchester United example.
-- **Milk/honey = moon/sun = pituitary/pineal = magnetic/electric = female/male.** (02, 03, 04) — justified. This is a dense multi-term correspondence table and the three passes serve different frames (the oil process, the sun/moon principles, the Holy Grail). Reinforcement here is pedagogically sound.
-- **Earth is an anagram for heart; earth is the heart/middle of the soul system; the balanced realm of good and evil.** (07 (stated twice within the lesson), 08) — **not justified**. Lesson 7 makes the anagram point, then makes it again verbatim ~1,000 words later, then Lesson 8 makes it a third time ('This could be why earth is an anagram for heart'). The source repeats it too, but the course had the option to fold the second and third instances into the first.
-- **Left/right hemisphere functions — analytic fragmentation vs. unified holistic perception, masculine/feminine, ego/intuition.** (01 (intro), 06 (three passes: the short version, the 'let us get precise' version, and the side-by-side scientist/artist list)) — **not justified**. Lesson 6 covers the hemispheres, then announces 'Now let it get precise about how the two hemispheres actually work together' and repeats most of it, then reads out the two-column list a third time. This is faithful to the source's own duplication but produces a fatiguing block inside an already overlong lesson.
-- **Astral projection mechanism — 'using our mind to project the soul into the astral plane', frequency-matched entities.** (04, 05) — justified. Lesson 4 states it in passing while defining the astral plane; Lesson 5 develops it into the actual practice. Legitimate setup-and-payoff.
+- **The full Christ-oil crucifixion narrative: oil descends, rests three days on the sacrum (the cave), kundalini raises it past the 33 vertebrae, crosses the vagus nerve = crucifixion at 33, matter turned into spirit.** (02 (twice within the lesson), 03 (twice within the lesson — once as the John 3:3 exposition and again as "the alchemical process that occurs monthly")) — **not justified**. Four essentially complete retellings. The source itself repeats this passage on several pages, and the course simply narrates each occurrence rather than consolidating. The second telling in Lesson 3 does add one new element (the thalamus looking like a cross), but the rest is restatement.
+- **"Head is heaven, same root word HEA" / "Head and heaven are the same root words" / "the head is heaven because it is the place of consciousness in the centre of the brain"** (03, 06 (three times), 07, 08) — **not justified**. Five or six utterances of the same etymology-plus-claim. Once as a thesis and once as a reprise would be earned; the rest is the course tracking the source's page-by-page repetition.
+- **The mental plane is shared by all minds; thoughts are not created but received according to the frequency your mind is set to; hence "mindset"** (01, 04) — justified. Lesson 1 introduces it as part of the mind-as-tuner idea; Lesson 4 restates it in its proper place in the ladder of planes. The near-verbatim identity of the two passages is unnecessary, but the second occurrence does structural work.
+- **Ether = either = the fifth element with one foot in the physical and one in the astral** (04, 05, 07) — **not justified**. Stated three times in nearly identical words, including the Manchester United/Liverpool illustration in Lesson 4 and a bare restatement in Lesson 5. Nothing new is added on the second or third pass.
+- **Astral projection mechanics: the mind projects the soul, you meet only entities matching your frequency, low frequency means demons** (04, 05) — **not justified**. Lesson 4 delivers this in full, then Lesson 5 opens by delivering it again before adding the practice instructions. Lesson 5 should have carried it alone; the lesson split between 'planes' and 'astral plane' forced the duplication.
+- **Earth is an anagram for heart; earth is the heart/middle of the soul system; the checkered board symbolises duality** (07 (twice), 08) — **not justified**. The source repeats these lines across several cosmology pages and the course repeats them along with it.
+- **Milk = moon = pituitary = female = magnetic; honey = sun = pineal = male = electric** (02, 03, 04) — justified. This is the central polarity of the whole oil doctrine and each occurrence sits in a different frame (the process steps, the sun/moon principles, the Holy Grail). Reinforcement here is defensible.
 
-## 5. Is it teachable?
+## 6. Is it teachable?
 
 | Lesson | Minutes | Words | Sentences | Scaffold | Source statements touched | Direct quotes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -531,43 +584,40 @@ _Fuzzy matching is applied before flagging, so mangled-but-recognisable names ar
 | 07 - Ether, Moon, and the Light Projection | 14.3 | 2027 | 167 | 1 | 162 | 0 |
 | 08 - One Reality, Element Symbols, and Seven Heavens | 3.4 | 517 | 39 | 0 | 41 | 0 |
 
-**Verdict:** Serviceable but front-loaded and badly unbalanced. The material is grouped sensibly and the sequencing is defensible, but Lesson 6 collapses into a grab-bag and Lesson 8 is little more than a read-out of image captions.
+**Verdict:** Mixed. The first half is genuinely organised and would teach; the second half degrades into caption reading, and the final lesson transfers almost nothing.
 
 Strengths:
-- The course imposes a real structure on a document that has none. The source is an OCR'd jumble in which caption text, body text and marginalia interleave mid-sentence; the lessons untangle this into method (01), core mechanism (02), scriptural decodings (03), anatomy and planes (04), practice (05), chakra system (06), cosmology (07-08).
-- The Christ-oil process is taught as a genuinely followable seven-step sequence — 'First the claustrum... Second, the pineal gland electrically charges the fluid... Third, the pituitary gland magnetically charges the fluid' — which is clearer than the source's interleaved column layout.
-- Explicit callbacks orient the listener: 'We already talked about the Christ oil as the sacred brain oil and how raising it through the spine awakens the chakras'; 'We've already worked through what the chakras are, how they relate to the etheric body, and how they function as the seven seals.'
-- Practical instructions are preserved as usable procedure — the astral projection sequence ('Lie down flat, with no body parts touching... focus your attention on the middle of your brain on the pineal gland... imagine yourself pulling a rope up into the sky') and the seven-item 'how to raise the oil' list survive intact and in order.
-- Lesson 3 closes with a genuine synthesis rather than a stop: 'The spine is the ladder. The brain is heaven. The heart is the tree of life and the nervous system is the tree of knowledge. You are the temple.'
+- Lesson 2 performs the single most valuable editorial act in the course: it takes the source's oil material, which is physically scattered across a page as marginal notes interleaved mid-sentence with unrelated captions, and delivers it as a clean seven-step sequence — "First the claustrum... Second, the pineal gland electrically charges the fluid... Third, the pituitary gland magnetically charges the fluid..." A reader of the raw page has to reconstruct that order themselves.
+- Lessons use explicit forward and backward references ("We already talked about the Christ oil as the sacred brain oil and how raising it through the spine awakens the chakras"), giving the material a spine the document lacks.
+- Lesson 3 ends with a genuine synthesis in the course's own voice: "The spine is the ladder. The brain is heaven. The heart is the tree of life and the nervous system is the tree of knowledge. You are the temple." That is teaching, not transcription.
+- The Dispenza emotional scale is re-ordered upward from lust to wholeness, which is easier to follow aloud than the source's downward column.
 
 Weaknesses:
-- Lesson 6 is grossly oversized — it runs from unbalanced chakras through Baphomet, fast-food colours, the Dispenza emotion chart, hand chakras, foot chakras, the three brains, the hemispheres, 440Hz, Merkaba, Hebrew letters, Corinthians and the Matrix. There is no through-line a listener can hold; it reads as everything that did not fit elsewhere.
-- Lesson 8 barely teaches. It is a recitation of image captions — 'Therein also the alchemical symbol for earth and the solar and lunar symbols. The masonic compass is an eight-pointed star' — with no explanation of what any of it means. A listener with no picture in front of them gets nothing.
-- Transcript degradation destroys several of the mnemonics the course exists to convey. The chakra affirmations come out as 'The root is, but I. The sacral is. I feel the solar plexus. I do the heart, idzu. I love the throat. I, spene' — unusable. 'Amel means God' and 'all is a two, meaning all is Adam, the Taurus field' break the two word-puzzles they are supposed to demonstrate.
-- Filler tics ('Let them pick up where we left off', 'That 10', 'that in why', 'It ta', 'thatian') recur constantly and erode comprehension at exactly the points where the source is making a claim.
-- Ordering inside lessons sometimes fights the content. Lesson 2 gives the full crucifixion metaphor at the top, then the seven-step oil process, then circles back to the timing trigger ('When the moon enters your sun sign') that logically starts the whole cycle — the listener learns the ending before the beginning.
-- The course never tells the listener what the source actually is: a self-published illustrated book of annotated images. Caption fragments are therefore delivered in the same assertive register as body text, so a listener cannot tell a developed argument from a stray label — which is precisely how errors like 'The Jordan River is heaven' and the Chronicles/33-vertebrae link got in.
+- Lesson 8 is almost pure caption recital of an image gallery and teaches nothing: "There are also historical maps from the 1,500 seconds and 1,600 seconds, showing the North Pole and flat earth maps. Hitler used two flat earth maps... the Mayan cosmos, the Hebrew cosmos, and the United Nations. There are all carry this same imagery." A listener cannot see the maps and is told nothing about what they allegedly show.
+- Image-dependent claims are read out without being described. "The sigil of Lucifer is showing you the visual field of the eyes" (L1) and "Notice the lamb is looking up at a cup with the sun on the top" (L4) are faithful to the words and useless without the picture — the whole point of the sigil argument is a visual resemblance that is never described.
+- Lesson 6 is a grab bag roughly the length of three ordinary lessons, running from unbalanced chakras through Deuteronomy, Baphomet, fast-food logos, the Dispenza chart, hand chakras, foot chakras, the three brains, Egyptian symbols, Merkaba, Corinthians, and the full left/right hemisphere table. There is no organising thread after the first third.
+- Table-shaped content is read as flat lists and dissolves: "the metals and planets are listed alongside them, gold, lead, moon, sun, Mars, Jupiter, Saturn, Venus, and Mercury" and "The planes also map onto this. The mental plane is thoughts..." convey no correspondences at all.
+- Transcription damage lands on precisely the parts that are hardest to recover aurally — the I AM chakra statements, "all is a two, meaning all is Adam," "Diamon" for daemon, "the optic pellamus" — so the listener gets noise where the source had a mapping.
+- The 144,000 arithmetic is narrated exactly as the source miscomputes it ("Add those first five. Four plus six plus ten plus twelve equals forty-eight" — only four numbers are added), which is unfollowable read aloud and never flagged.
 
-## 6. What a listener will never learn
+## 7. What a listener will never learn
 
-- **The entire front matter: 'AUTHOR - HARRY B JOSEPH (REVIVAL OF WISDOM)', the title 'THE BOOK OF WISDOM', registration with the UK Copyright Service, and the warning that marketing or re-sale without consent invites legal action.** — The listener is never told whose work this is, what it is called, or that it is a self-published copyrighted book. The course presents the doctrine as free-floating authority with no attribution or provenance.
-- **'ALL OF THE IMAGES IN THIS BOOK HAVE BEEN EDITED, MANIPULATED, AND ATIFICIALLY GENERATED TO AVOID ANY COPYRIGHT CLAIMS... NOT ONE OF THE IMAGES USED IN THIS BOOK IS BEING USED IN ITS ORIGINAL FORM.'** — The lessons repeatedly appeal to images as evidence ('Notice the lamb is looking up at a cup', 'There is an image of Horus and Set', 'Hitler used two flat earth maps'). The source itself admits every one of those images was edited or AI-generated. Omitting that disclosure materially changes how a listener weighs the visual 'evidence'.
-- **'THREE WISE MEN FROM THE EAST' = 1. THALAMUS 2. PINEAL GLAND 3. PITUITARY GLAND.** — This is a discrete scripture-to-anatomy decoding of exactly the kind the course otherwise reproduces exhaustively. It vanishes entirely, even though the thalamus appears elsewhere in Lesson 3 as the 'cross' of the crucifixion.
-- **'ASTRONOMY / ASTRO=ASTRAL / SPACE IS FAKE' and the 'MENTALISM / CORRESPONDANCE / ENERGY' hermetic labels attached to the planes diagram.** — 'Space is fake' is the source's blunt statement of its cosmological position and the etymological bridge (astronomy = astral) that justifies calling stars 'portals'. Lesson 4 keeps only the softened 'the stars are not physical places. They are portals to the astral plane', so the load-bearing premise is dropped.
-- **'SIN IN LATIN IS SINISTER MEANS LEFT / RIGHT = RIGHTIOUS'.** — Lesson 6 keeps only half of it — 'In Latin, and right is righteous' — dropping the left-brain=sin=sinister half, which is the whole point of the pairing and the source's moral framing of left-hemisphere dominance.
-- **The 'S P IN E / SPIN E' wordplay, and the Vishnu–Brahma–Shiva mapping onto soul/mind/body.** — Lesson 3 salvages only 'The soul, which is Brahma, has multiple faces'; the trimurti-to-triad correspondence and one of the source's characteristic word-splits are lost, weakening the 'all is one' syncretic demonstration the course opens with.
+- **"THREE WISE MEN FROM THE EAST" = 1. THALAMUS 2. PINEAL GLAND 3. PITUITARY GLAND** — One of the source's named biblical-to-brain decodings, in the same family as the 12 disciples = 12 cranial nerves that the course does teach. It is never mentioned in any lesson, so the listener loses a complete decoding.
+- **"SIN IN LATIN IS SINISTER MEANS LEFT / RIGHT = RIGHTIOUS"** — The source's etymological justification for why the left hemisphere is coded as sin and the right as righteousness. Lesson 6 only emits the fragment "In Latin, and right is righteous", dropping the sinister/left half, so the argument collapses into an unexplained assertion.
+- **The chakra correspondence table: crown=Moon/spirit/spirituality, third eye=Mercury/intuition, throat=Venus/communication, heart=Sun/love, solar=Mars/power, sacral=Jupiter/creativity, root=Saturn/earth/survival, plus gold and lead as the metal poles** — Lesson 5 gives the qualities correctly but then dumps the rest as an unordered heap — "the metals and planets are listed alongside them, gold, lead, moon, sun, Mars, Jupiter, Saturn, Venus, and Mercury" — which transfers no mapping at all. The planet-per-chakra link is load-bearing for the later claim that "each chakra is one of the seven planets."
+- **"ASTRONOMY / ASTRO=ASTRAL / SPACE IS FAKE" and the marginal Hermetic-principle labels "CORRESPONDANCE / MENTALISM / ENERGY"** — The astro=astral etymology is the source's bridge between its astronomy and astral-plane material, and "space is fake" is the explicit cosmological claim that the flat-earth section rests on. Neither is spoken anywhere.
+- **The Hindu trinity mapping: Vishnu / Brahma / Shiva laid out against soul / mind / body, with "THE MIND IS THE SERPENT BECAUSE SERPENTS SYMBOLIZE KNOWLEDGE"** — Lesson 3 keeps the serpent-mind idea and "the soul, which is Brahma, has multiple faces," but drops the three-deity-to-three-part-self diagram, so the listener hears an isolated Brahma reference with no framework around it.
+- **"SEVEN UP IS TRUTH IN PLANE SITE" and the "from thought to energy matter" caption attached to the Dispenza figure** — Minor, but it is the source's stated reading of why that emotional-scale figure belongs in a book about planes descending from thought to matter.
 
 ## Bottom line
 
-Coverage is high — roughly 90% of the source's substantive claims survive, and the course does real work turning an unstructured OCR dump into an ordered curriculum. The losses are the front matter (author, title, copyright) and the image disclaimer, plus a few caption-level decodings ('three wise men' = thalamus/pineal/pituitary, 'space is fake', sin=sinister=left). The fabrication count is low for a document this chaotic, but three findings are substantive rather than cosmetic: 'The Jordan River is heaven' contradicts the source's own mapping, the head/heart/heel triad has soul and body swapped, and Chronicles 3:10 is falsely linked to the 33 vertebrae — all three caused by reading floating image labels as prose. Two smaller insertions import outside anatomy (the retinohypothalamic 'light information' gloss, the caduceus staff). Repetition is the main structural flaw: the Christ-oil narrative is told about four times across Lessons 2-3, 'head is heaven' six times, and the ether/either pun three times — some inherited from the source, but the course chose not to consolidate. Fix the three misreadings, restore the authorship and image-manipulation disclosures, split Lesson 6, and give Lesson 8 actual explanatory content rather than a caption list.
+A listener would come away with nearly all of the document's verbal doctrine and, thanks to Lesson 2's restructuring, a clearer grasp of the Christ-oil sequence than the raw page offers. What they would not get is anything the source teaches through pictures — the sigil, the Masonic and Egyptian artwork, the flat-earth maps, the chakra-planet-metal table, the pineal anatomy diagram — which the narration recites as labels and abandons. Add a handful of real errors (head/heart/heel mapped to mind/body/soul instead of mind/soul/body; invented 'feminine and masculine poles' framing for the I AM statements; a fabricated Chronicles-to-33-vertebrae link) and a few genuine omissions (the three wise men as thalamus/pineal/pituitary, sin=sinister=left, astro=astral/space is fake). Call it about 80% teaching-equivalent, with the last lesson contributing close to nothing and the middle lessons carrying almost all the value.
 
 ---
 
 <details><summary>Source statements as parsed</summary>
 
 - [ ] `00` BOOK OF WISDOM AUTHOR
-- [ ] `01` HARRY B JOSEPH (REVIVAL OF WISDOM) WORK TITLE: "THE BOOK OF WISDOM" IS REGISTERED WITH UK COPYRIGHT SERVICE.
-- [ ] `02` MARKETING, RE-SALE, AND CLAIMING "THE BOOK OF WISDOM" WITHOUT CONSENT WILL RESULT IN VIOLATING THE LEGAL PROTECTION RIGHT, WHICH CAN RESULT IN LEGAL ACTION TOWARDS THE INDIVIDUAL.
 - [~] `03` AUTHOR: REVIVAL OF WISDOM REVIVALOFWSIDOM REVIVALOFWISDOM3 REVIVALOFWISDOM INTRODUCTION THE BOOK OF WISDOM IS A BOOK CONTAINING ESOTERICISM, OCCULTISM, SYMBOLISM, AND MOST IMPORTANTLY, SYNCRETISM.
 - [x] `04` SYNCRETISM IS THE METHOD THAT I, REVIVAL OF WISDOM, HAVE USED TO SYNC/COMBINE ALL FIELDS OF KNOWLEDGE.
 - [x] `05` SYNCRETSIM UNITES ALL SUBECTS OF MATTER INTO ONE HOLY SCIENCE.
@@ -577,7 +627,6 @@ Coverage is high — roughly 90% of the source's substantive claims survive, and
 - [x] `09` THE LEFT HEMISPHERE OF THE BRAIN BREAKS DOWN AND ANYLIZES THE RIGHT HEMIPHEARS UNITED PERCEPTION OF REALITY INTO SEPERATE FRAGMENTS SO THAT WE CAN MANIPULATE AND UNDERSTAND THINGS LOGICALLY.
 - [x] `10` TO GAIN A FULL UNDERSTANDING OF THE INFORMATION THIS BOOK PRESENTS, YOU MUST FIRST FREE YOUR MIND FROM THE INDOCTRINATIONS GIVEN BY THE EDUCATIONAL SYSTEMS WE WERE FORCED TO ATTEND TO AND, SECONDLY, TRY AND PERCEIVE REALITY AS ONE UNITED AND WHOLISTIC CREATION.
 - [~] `11` ALL OF THE IMAGES IN THIS BOOK HAVE BEEN EDITED, MANIPULATED, AND ATIFICIALLY GENERATED TO AVOID ANY COPYRIGHT CLAIMS.
-- [~] `12` EVERY IMAGE THE BOOK INCLUDES HAS BEEN CHANGED AND IS NOW CLASSED AS "ARTWORK" UNDER THE COPYRIGHT OF THE AUTHOR OF THE BOOK OF WISDOM.
 - [~] `13` NOT ONE OF THE IMAGES USED IN THIS BOOK IS BEING USED IN ITS ORIGINAL FORM.
 - [x] `14` LIGHT GENESIS 1:3 "LET THERE BE LIGHT" WE LIVE INSIDE OF A LIGHTWAVE UNIVERSE WHERE ALL THINGS ARE CREATED OUT OF LIGHT.
 - [x] `15` LOWVIBRATING LIGHT TURNS INTO MATTER, HIGH-VIBRATING MATTER TURNS BACK INTO LIGHT.

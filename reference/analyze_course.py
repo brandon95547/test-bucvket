@@ -91,6 +91,31 @@ SIDECAR_SOURCE: Path | None = None
 OCR_GATE = 85.0        # mean tesseract word confidence
 LEX_GATE = 95.0        # share of lowercase word-tokens that are real words
 
+# Front matter is not teaching content. A course that omits the copyright notice has
+# not failed the listener, so scoring it as dropped content buries the findings that
+# matter under boilerplate. Excluded statements are listed in the report, never
+# silently dropped, and --keep-front-matter scores them like anything else.
+# Match the legal furniture only. Loose patterns are worse than none here: a bare
+# "copyright" also hits the source's disclosure that its images were edited and
+# AI-generated, which is evidentiary rather than legal — a reader who sees it knows not
+# to trust the pictures the lessons cite as proof — and "without consent" on its own
+# hits "FREQUENCY IS THE ONLY THING THAT ENTERS YOUR TEMPLE WITHOUT CONSENT".
+BOILERPLATE_PATTERNS = (
+    r"registered with.{0,30}copyright",
+    r"under the copyright of",
+    r"all rights reserved",
+    r"\bre-?sale\b",
+    r"legal action",
+    r"work title",
+    r"\bisbn\b",
+)
+
+# A narrated word counts as lifted when it sits inside a run of at least this many
+# consecutive words that also appear, in the same order, in the source. Eight is long
+# enough that ordinary phrasing does not collide by chance and short enough to catch a
+# copied sentence.
+VERBATIM_SHINGLE = 8
+
 DICT_PATHS = (
     "/usr/share/dict/british-english",     # first: 1940 English letter, "cheque"/"connexions"
     "/usr/share/dict/american-english",
@@ -327,6 +352,86 @@ def split_sentences(text: str) -> list[str]:
 def is_scaffold(sentence: str) -> bool:
     low = sentence.strip().lower()
     return any(re.search(p, low) for p in SCAFFOLD_PATTERNS)
+
+
+def is_boilerplate(text: str) -> bool:
+    low = text.lower()
+    return any(re.search(p, low) for p in BOILERPLATE_PATTERNS)
+
+
+def bare_words(text: str) -> list[str]:
+    """Word stream with casing and punctuation removed.
+
+    The source is upper-case with OCR punctuation; the transcript is prose. Comparing
+    them for copying has to happen below that difference or nothing matches.
+    """
+    return re.findall(r"[a-z0-9']+", text.lower())
+
+
+def verbatim_runs(source: str, lessons: list[tuple[str, str]], n: int):
+    """Find narration lifted word-for-word from the source.
+
+    Coverage answers 'is the content there'. This answers the opposite question: is it
+    there *in the source's own words*. A course can score high on the first by simply
+    reading the book aloud, which is what this is meant to catch. Returns per-lesson
+    stats and every run, longest first.
+
+    Note when reading the output: the source quotes scripture, so a course quoting the
+    same verse produces a run here without having copied the source's own writing.
+    """
+    src = bare_words(source)
+    index: dict[tuple, list[int]] = {}
+    for i in range(len(src) - n + 1):
+        index.setdefault(tuple(src[i:i + n]), []).append(i)
+
+    per_lesson = []
+    runs: list[tuple[int, str, str]] = []      # (length, lesson, text)
+    total_words = total_lifted = 0
+
+    for lesson, text in lessons:
+        nar = bare_words(text)
+        covered = [False] * len(nar)
+        longest = 0
+        j = 0
+        while j <= len(nar) - n:
+            key = tuple(nar[j:j + n])
+            starts = index.get(key)
+            if not starts:
+                j += 1
+                continue
+            best = 0
+            for start in starts:
+                k = n
+                while (j + k < len(nar) and start + k < len(src)
+                       and nar[j + k] == src[start + k]):
+                    k += 1
+                best = max(best, k)
+            for t in range(j, j + best):
+                covered[t] = True
+            runs.append((best, lesson, " ".join(nar[j:j + best])))
+            longest = max(longest, best)
+            j += best
+
+        lifted = sum(covered)
+        total_words += len(nar)
+        total_lifted += lifted
+        per_lesson.append({
+            "lesson": lesson,
+            "words": len(nar),
+            "lifted": lifted,
+            "percent": pct(lifted, len(nar)),
+            "longest_run": longest,
+        })
+
+    runs.sort(key=lambda r: -r[0])
+    return {
+        "shingle": n,
+        "percent": pct(total_lifted, total_words),
+        "words": total_words,
+        "lifted": total_lifted,
+        "per_lesson": per_lesson,
+        "runs": [{"length": l, "lesson": ls, "text": t} for l, ls, t in runs],
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -1047,10 +1152,21 @@ ADJUDICATION_SCHEMA = {
             "required": ["verdict", "strengths", "weaknesses"],
             "additionalProperties": False,
         },
+        "originality": {
+            "type": "object",
+            "properties": {
+                "verdict": {"type": "string",
+                            "enum": ["taught", "mixed", "largely recited"]},
+                "note": {"type": "string"},
+            },
+            "required": ["verdict", "note"],
+            "additionalProperties": False,
+        },
         "bottom_line": {"type": "string"},
     },
     "required": ["coverage_verdict", "coverage_percent", "missing_from_course",
-                 "fabrications", "redundancy", "teachability", "bottom_line"],
+                 "fabrications", "originality", "redundancy", "teachability",
+                 "bottom_line"],
     "additionalProperties": False,
 }
 
@@ -1064,9 +1180,18 @@ nouns and odd word choices may be transcription artifacts rather than authoring
 errors — label those `likely_transcription_artifact` rather than `invented_fact`
 when the surrounding sentence clearly tracks the source.
 
-Judge strictly against the source. Anything asserted in the audio that the source
-does not support is a finding, including outside knowledge about the author that a
-listener would take as coming from the source document.
+The standard is teaching equivalence: would someone who only listened come away
+knowing what someone who read the document knows? Judge the *content*. Attribution,
+authorship, title and copyright are explicitly out of scope — do not report them as
+gaps, and do not count them toward or against coverage.
+
+Anything asserted in the audio that the source does not support is still a finding,
+including outside knowledge presented as though it came from the source.
+
+Weigh the medium honestly. Where the source teaches through an image, diagram or
+table, a listener has no picture; narration that recites a caption without explaining
+it transfers nothing, however faithful it is to the words. That is a teaching failure
+even though it scores as covered.
 
 <source_document>
 {source}
@@ -1083,14 +1208,20 @@ signals. Treat them as leads to verify, not conclusions:
 {signals}
 </mechanical_analysis>
 
-Answer four questions:
-1. Does the course carry all the substantive content of the source? Give
-   `coverage_percent` as your own judgement of the share of the source's meaningful
-   content that survives into the audio (not a token count).
+Answer five questions:
+1. Would a listener finish knowing what a reader knows? Give `coverage_percent` as
+   your own judgement of the share of the source's teachable content that actually
+   transfers through audio (not a token count, and not counting front matter).
 2. Did the course invent, import, or misread anything?
-3. What is repeated across lessons, and is the repetition pedagogically justified or
+3. Is the course teaching the material or reciting it? The mechanical pass reports
+   what share of narration is copied word-for-word and quotes the longest runs. Set
+   `originality.verdict` to one of `taught`, `mixed`, or `largely recited`, and say in
+   `note` what the course does in its own words versus what it lifts. Discount runs
+   that are scripture or another quoted third text — the source quoting a verse and
+   the course quoting the same verse is not the course copying the source.
+4. What is repeated across lessons, and is the repetition pedagogically justified or
    just padding?
-4. Is the surviving content arranged so a listener actually learns it?
+5. Is the surviving content arranged so a listener actually learns it?
 
 Be specific and quote the audio. Do not pad the lists — only real findings.
 """
@@ -1144,8 +1275,16 @@ def adjudicate(source: str, lessons: list[tuple[str, str]], signals: str) -> dic
         return None
 
 
-def signal_digest(claims: list[Claim], units: list[Unit], dups) -> str:
+def signal_digest(claims: list[Claim], units: list[Unit], dups,
+                  lifted: dict | None = None) -> str:
     lines = []
+    if lifted:
+        lines.append(
+            f"- verbatim overlap: {lifted['percent']:.1f}% of narrated words sit inside "
+            f"a run of {lifted['shingle']}+ consecutive words copied from the source "
+            f"({len(lifted['runs'])} runs). Longest runs:")
+        for r in lifted["runs"][:12]:
+            lines.append(f'    * [{r["length"]} words, {r["lesson"]}] "{r["text"][:220]}"')
     miss = [c for c in claims if c.status == "missing"]
     part = [c for c in claims if c.status == "partial"]
     lines.append(f"- {len(claims)} source claims: "
@@ -1265,7 +1404,8 @@ def render(source: str, provenance: str, ocr_conf: float, gate: float,
            ocr_lex: float, lex_gate: float, gate_bypassed: bool,
            claims: list[Claim], units: list[Unit], lessons: list[tuple[str, str]],
            dups, durations: dict[str, float], verdict: dict | None,
-           tr: "Transcriber") -> str:
+           tr: "Transcriber", lifted: dict,
+           front_matter: list[Claim]) -> str:
 
     covered = [c for c in claims if c.status == "covered"]
     partial = [c for c in claims if c.status == "partial"]
@@ -1321,12 +1461,37 @@ def render(source: str, provenance: str, ocr_conf: float, gate: float,
     A(f"| Content sentences with no close source match | {len(ungrounded)} |")
     A(f"| Sentences naming something absent from the source | {len(ent_flags)} |")
     A(f"| Near-duplicate statement pairs across lessons | {len(dups)} |")
+    A(f"| **Narration lifted word-for-word from the source** | "
+      f"**{lifted['percent']:.0f}%** |")
     A("")
+    A("Read the last two rows together. Coverage should be high and lifted should be "
+      "low; a course that reads the source aloud scores well on the first *because* it "
+      "scores badly on the second. An expansion ratio near 1.0x is the same warning "
+      "from the other direction — teaching adds words, copying does not.")
+    A("")
+
+    if front_matter:
+        A(f"<details><summary>{len(front_matter)} statement(s) excluded as front matter, "
+          f"not scored</summary>")
+        A("")
+        A("Attribution, title and copyright boilerplate. A course that omits these has "
+          "not failed the listener, so they are held out of the coverage numbers above. "
+          "Score them like any other statement with `--keep-front-matter`.")
+        A("")
+        for c in front_matter:
+            A(f"- `{c.idx:02d}` {c.text[:200]}{'…' if len(c.text) > 200 else ''}")
+        A("")
+        A("</details>")
+        A("")
 
     if verdict:
         A(f"> **Claude's independent read of coverage: {verdict['coverage_percent']}%** — "
           f"{verdict['coverage_verdict']}")
         A("")
+        if verdict.get("originality"):
+            o = verdict["originality"]
+            A(f"> **Is this taught or recited? {o['verdict']}** — {o['note']}")
+            A("")
 
     # ---- Q1 coverage
     A("## 2. Does the audio carry all the context?")
@@ -1396,8 +1561,35 @@ def render(source: str, provenance: str, ocr_conf: float, gate: float,
         A("No fabrications confirmed on review.")
         A("")
 
+    # ---- Q3b originality
+    A("## 4. Is it taught, or is it read out?")
+    A("")
+    n = lifted["shingle"]
+    A(f"**{lifted['percent']:.1f}% of narrated words sit inside a run of {n}+ consecutive "
+      f"words copied from the source** ({lifted['lifted']:,} of {lifted['words']:,} words, "
+      f"{len(lifted['runs'])} runs).")
+    A("")
+    A("| Lesson | Words | Lifted | Longest unbroken run |")
+    A("| --- | --- | --- | --- |")
+    for r in lifted["per_lesson"]:
+        A(f"| {r['lesson']} | {r['words']:,} | {r['percent']:.0f}% | "
+          f"{r['longest_run']} words |")
+    A("")
+    if lifted["runs"]:
+        A(f"### Longest passages carried over word-for-word")
+        A("")
+        for r in lifted["runs"][:15]:
+            A(f"- **{r['length']} words** — _{r['lesson']}_")
+            A(f"  > {r['text'][:400]}{'…' if len(r['text']) > 400 else ''}")
+        A("")
+    A("_Scripture is the honest exception: where the source quotes a verse and the "
+      "course quotes the same verse, the run above is shared quotation of a third text, "
+      "not the source's own prose. Check long runs against that before treating them as "
+      "copying._")
+    A("")
+
     # ---- Q3 redundancy
-    A("## 4. Duplication and redundancy")
+    A("## 5. Duplication and redundancy")
     A("")
     multi = [c for c in claims if len(c.lessons_covering) > 1]
     A(f"{len(multi)} of {len(claims)} source statements are taught in more than one lesson "
@@ -1426,7 +1618,7 @@ def render(source: str, provenance: str, ocr_conf: float, gate: float,
         A("")
 
     # ---- Q4 teachability
-    A("## 5. Is it teachable?")
+    A("## 6. Is it teachable?")
     A("")
     A("| Lesson | Minutes | Words | Sentences | Scaffold | Source statements touched | Direct quotes |")
     A("| --- | --- | --- | --- | --- | --- | --- |")
@@ -1457,7 +1649,7 @@ def render(source: str, provenance: str, ocr_conf: float, gate: float,
             A("")
 
     if verdict and verdict["missing_from_course"]:
-        A("## 6. What a listener will never learn")
+        A("## 7. What a listener will never learn")
         A("")
         for m in verdict["missing_from_course"]:
             A(f"- **{m['source_fact']}** — {m['why_it_matters']}")
@@ -1605,6 +1797,15 @@ def main() -> int:
     o.add_argument("--ignore-ocr-gate", action="store_true",
                    help="score anyway when the source text is below either gate; the "
                         "report carries a prominent unreliability warning")
+    o.add_argument("--keep-front-matter", action="store_true",
+                   help="score copyright/registration/title boilerplate as teaching "
+                        "content too (default: excluded and listed separately)")
+
+    v = ap.add_argument_group("originality")
+    v.add_argument("--verbatim-shingle", type=int, default=VERBATIM_SHINGLE, metavar="N",
+                   help=f"a narrated word counts as lifted when it sits in a run of N+ "
+                        f"consecutive words matching the source in order "
+                        f"(default {VERBATIM_SHINGLE})")
 
     g = ap.add_argument_group("transcription")
     g.add_argument("--whisper-model", default=os.getenv("WHISPER_MODEL", "medium.en"),
@@ -1679,8 +1880,17 @@ def main() -> int:
         print(f"\nwrote {REPORT_MD}  (source text rejected — see 'Fix it')", file=sys.stderr)
         return 2
 
-    claims = split_claims(source)
-    print(f"      {len(claims)} source statements", file=sys.stderr)
+    all_claims = split_claims(source)
+    # Front matter is dropped before matching rather than filtered out of each total
+    # afterwards, so every downstream count is right by construction.
+    if args.keep_front_matter:
+        claims, front_matter = all_claims, []
+    else:
+        front_matter = [c for c in all_claims if is_boilerplate(c.text)]
+        claims = [c for c in all_claims if not is_boilerplate(c.text)]
+    print(f"      {len(claims)} source statements"
+          + (f" ({len(front_matter)} excluded as front matter)" if front_matter else ""),
+          file=sys.stderr)
 
     print(f"[2/5] transcribing audio with {tr.model_name} on {tr.device}/{tr.compute_type} ({reason})", file=sys.stderr)
     lessons, durations = load_lessons(tr, args.force_transcribe)
@@ -1689,9 +1899,12 @@ def main() -> int:
     units = build_units(lessons)
     match(claims, units)
     dups = near_duplicates(units)
+    lifted = verbatim_runs(source, lessons, args.verbatim_shingle)
+    print(f"      {lifted['percent']:.1f}% of narration is verbatim from the source "
+          f"(runs of {args.verbatim_shingle}+ words)", file=sys.stderr)
 
     verdict = None
-    digest = signal_digest(claims, units, dups)
+    digest = signal_digest(claims, units, dups, lifted)
     (WORK_DIR / "signals.txt").write_text(digest, encoding="utf-8")
 
     if args.adjudication:
@@ -1705,7 +1918,8 @@ def main() -> int:
 
     print("[5/5] writing report", file=sys.stderr)
     md = render(source, provenance, ocr_conf, args.ocr_gate, lex, args.lex_gate,
-                gate_bypassed, claims, units, lessons, dups, durations, verdict, tr)
+                gate_bypassed, claims, units, lessons, dups, durations, verdict, tr,
+                lifted, front_matter)
     REPORT_MD.write_text(md, encoding="utf-8")
     REPORT_JSON.write_text(json.dumps({
         "source": source,
@@ -1728,6 +1942,8 @@ def main() -> int:
             "embed_device": torch_device(),
             "cuda_devices_visible": cuda_devices(),
         },
+        "verbatim": lifted,
+        "front_matter_excluded": [c.as_dict() for c in front_matter],
         "claims": [c.as_dict() for c in claims],
         "units": [asdict(u) for u in units],
         "near_duplicates": [
