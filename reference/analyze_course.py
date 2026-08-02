@@ -1057,7 +1057,8 @@ ADJUDICATION_SCHEMA = {
 ADJUDICATION_PROMPT = """\
 You are auditing an AI-generated audio course against its single source document.
 
-The source is a private letter. The course is {n} narrated lessons. The lesson text
+The source is reproduced verbatim below — read what kind of document it actually is
+rather than assuming a form. The course is {n} narrated lessons. The lesson text
 below is a speech-to-text transcript of the delivered audio, so misspelled proper
 nouns and odd word choices may be transcription artifacts rather than authoring
 errors — label those `likely_transcription_artifact` rather than `invented_fact`
@@ -1065,7 +1066,7 @@ when the surrounding sentence clearly tracks the source.
 
 Judge strictly against the source. Anything asserted in the audio that the source
 does not support is a finding, including outside knowledge about the author that a
-listener would take as coming from the letter.
+listener would take as coming from the source document.
 
 <source_document>
 {source}
@@ -1331,7 +1332,7 @@ def render(source: str, provenance: str, ocr_conf: float, gate: float,
     A("## 2. Does the audio carry all the context?")
     A("")
     if missing:
-        A(f"**No — {len(missing)} statement(s) from the letter never appear in any lesson.**")
+        A(f"**No — {len(missing)} statement(s) from the source never appear in any lesson.**")
         A("")
         A("| # | Missing from the course | Closest thing the audio says |")
         A("| --- | --- | --- |")
@@ -1340,7 +1341,7 @@ def render(source: str, provenance: str, ocr_conf: float, gate: float,
             A(f"| {c.idx} | {c.text} | _{closest}_ (sim {c.best_emb:.2f}) |")
         A("")
     else:
-        A("**Yes — every statement in the letter has a corresponding passage in the audio.**")
+        A("**Yes — every statement in the source has a corresponding passage in the audio.**")
         A("")
 
     if partial:
@@ -1369,7 +1370,7 @@ def render(source: str, provenance: str, ocr_conf: float, gate: float,
         A("")
 
     if ent_flags:
-        A(f"### Names and numbers spoken that are not in the letter ({len(ent_flags)})")
+        A(f"### Names and numbers spoken that are not in the source ({len(ent_flags)})")
         A("")
         A("| Lesson | Not in source | Sentence |")
         A("| --- | --- | --- |")
@@ -1499,8 +1500,16 @@ def preflight(tr: Transcriber, reason: str, gate: float, lex_gate: float) -> int
 
     print("\nanalyze_course.py preflight\n" + "-" * 62)
 
+    # A supplied --source-text replaces the PDF entirely, so neither the file nor the
+    # OCR toolchain is required. Without this, a host that only ever scores against a
+    # sidecar transcription fails preflight over tools it will never call.
+    need_pdf = SIDECAR_SOURCE is None
+
     print("\npaths")
-    row("source pdf", str(INPUT_PDF), INPUT_PDF.exists())
+    if need_pdf:
+        row("source pdf", str(INPUT_PDF), INPUT_PDF.exists())
+    else:
+        print(f"  --   source pdf                 not needed (--source-text supplied)")
     try:
         n_audio = len(audio_files())
         row("audio dir", f"{AUDIO_DIR}  ({n_audio} file(s))", True)
@@ -1519,7 +1528,7 @@ def preflight(tr: Transcriber, reason: str, gate: float, lex_gate: float) -> int
         row("source text", str(SIDECAR_SOURCE), SIDECAR_SOURCE.exists())
 
     print("\nbinaries")
-    for name, required in (("pdftoppm", True), ("tesseract", True),
+    for name, required in (("pdftoppm", need_pdf), ("tesseract", need_pdf),
                            ("pdftotext", False), ("ffprobe", False)):
         found = shutil.which(name)
         if required:
@@ -1659,7 +1668,7 @@ def main() -> int:
         print(f"      source text rejected (confidence {ocr_conf:.1f}%/{args.ocr_gate:.0f}%, "
               f"dictionary {lex:.1f}%/{args.lex_gate:.0f}%) — will not score coverage",
               file=sys.stderr)
-        print(f"[2/5] transcribing audio on {tr.device}/{tr.compute_type} ({reason})",
+        print(f"[2/5] transcribing audio with {tr.model_name} on {tr.device}/{tr.compute_type} ({reason})",
               file=sys.stderr)
         lessons, durations = load_lessons(tr, args.force_transcribe)
         OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -1673,7 +1682,7 @@ def main() -> int:
     claims = split_claims(source)
     print(f"      {len(claims)} source statements", file=sys.stderr)
 
-    print(f"[2/5] transcribing audio on {tr.device}/{tr.compute_type} ({reason})", file=sys.stderr)
+    print(f"[2/5] transcribing audio with {tr.model_name} on {tr.device}/{tr.compute_type} ({reason})", file=sys.stderr)
     lessons, durations = load_lessons(tr, args.force_transcribe)
 
     print("[3/5] matching", file=sys.stderr)
