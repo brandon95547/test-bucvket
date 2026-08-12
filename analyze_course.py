@@ -2,8 +2,8 @@
 """
 analyze_course.py — audit an audio course against its source document.
 
-Compares the MP3s in reference/output/ against reference/input/original.pdf and
-writes a report answering four questions:
+Compares the MP3s in output/ against input/original.pdf and writes a report
+answering four questions:
 
   1. Do the audio files carry all the context from the original, without
      duplicating or padding it?

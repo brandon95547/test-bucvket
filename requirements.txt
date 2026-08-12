@@ -1,0 +1,40 @@
+# analyze_course.py — course audit harness.
+#
+# These are the versions the tool has actually been run against (Python 3.11).
+# The quickest install is not to install at all: the phansora-api virtualenv
+# already satisfies every line below — see "Installing" in README.md.
+#
+#   pip install -r requirements.txt
+#
+# NOT pip-installable — these come from the system package manager:
+#   poppler-utils   pdftoppm (required), pdftotext (used when present)
+#   tesseract-ocr   the OCR engine itself (required)
+#   ffmpeg          ffprobe, for audio duration when Whisper doesn't report it
+
+# --- transcription: MP3s -> lesson transcripts
+faster-whisper==1.2.1           # pulls av, onnxruntime, tokenizers, huggingface-hub
+ctranslate2==4.8.1              # imported directly, to count usable CUDA devices
+
+# --- scoring: claims x units coverage matrix
+sentence-transformers==5.6.0    # MiniLM embeddings; pulls torch, transformers, scipy
+numpy==1.26.4
+torch==2.13.0                   # CPU build on this box; see the note below
+
+# On a machine with no GPU, install torch from the CPU index *first* — otherwise
+# pip pulls ~2.5 GB of CUDA wheels that will never be used:
+#
+#   pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r requirements.txt
+#
+# The +cpu build satisfies the pin above, so the second command leaves it alone.
+
+# --- OCR page preprocessing: deskew + Sauvola local threshold
+# Soft dependency. Without these the script OCRs the raw page render instead of
+# skipping the job, which costs accuracy on faded scans rather than failing.
+pillow==12.2.0
+scipy==1.17.1
+
+# --- optional: the Claude adjudication pass
+# Skipped with a warning when this is missing or no ANTHROPIC_API_KEY is set;
+# the deterministic report is produced either way.
+anthropic==0.120.0
