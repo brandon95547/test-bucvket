@@ -786,8 +786,16 @@ def ocr_pdf(pdf: Path, force: bool) -> tuple[str, float, list[OcrLine], str]:
     cache = WORK_DIR / "ocr.json"
     if cache.exists() and not force:
         d = json.loads(cache.read_text(encoding="utf-8"))
-        lines = [OcrLine(tuple(l["key"]), l["text"], l["conf"], l["run"]) for l in d["lines"]]
-        return d["text"], d["confidence"], lines, d.get("method", "ocr")
+        # A cache with no "method" was written before the text layer was joined on
+        # PAGE_SEP. Its text has no page breaks at all, so body_text() sees the whole
+        # book as a single page — and, finding the contents page's dot leaders in it,
+        # throws the book away as a table of contents. Re-read the PDF instead of
+        # trusting it; that costs one extraction and is silently wrong otherwise.
+        if d.get("method"):
+            lines = [OcrLine(tuple(l["key"]), l["text"], l["conf"], l["run"]) for l in d["lines"]]
+            return d["text"], d["confidence"], lines, d["method"]
+        print("      ignoring pre-page-break ocr.json cache — re-reading the PDF",
+              file=sys.stderr)
 
     if not shutil.which("tesseract"):
         raise SystemExit("need tesseract on PATH")
@@ -814,7 +822,7 @@ def ocr_pdf(pdf: Path, force: bool) -> tuple[str, float, list[OcrLine], str]:
             lines = [OcrLine((0, 0, 0, i), t.strip(), 100.0, "pdf-text-layer")
                      for i, t in enumerate(embedded.splitlines()) if t.strip()]
             cache.write_text(json.dumps(
-                {"text": embedded, "confidence": 100.0,
+                {"text": embedded, "confidence": 100.0, "method": "text-layer",
                  "lines": [{"key": list(l.key), "text": l.text, "conf": l.conf, "run": l.run}
                            for l in lines]}, indent=2), encoding="utf-8")
             return embedded, 100.0, lines, "text-layer"
@@ -1154,6 +1162,14 @@ def embed(texts: list[str]):
 
 def match(claims: list[Claim], units: list[Unit]):
     import numpy as np
+
+    # Either side being empty means an earlier step read nothing; embedding an empty
+    # list yields a shapeless array that only fails at the matmul, far from the cause.
+    if not claims or not units:
+        raise SystemExit(
+            f"nothing to match: {len(claims)} source statement(s) against "
+            f"{len(units)} narrated sentence(s)"
+        )
 
     # compare each claim against single sentences AND adjacent pairs, since a claim
     # is often explained across two narrated sentences
@@ -1704,6 +1720,19 @@ def main() -> int:
         body = normalize_source(body_raw)
     for e in excluded:
         print(f"      excluded page {e['page']}: {e['reason']}", file=sys.stderr)
+
+    # Nothing left to compare against. This is always a reading fault, never a real
+    # book: say so here rather than let an empty claim list surface as a numpy shape
+    # error three steps later.
+    if not body.strip():
+        raise SystemExit(
+            f"every page of {page_count} was excluded as front/back matter — there is no "
+            "body text to score.\n"
+            "  A one-page count above means the page breaks were lost, so the whole book "
+            "reads as a single page.\n"
+            "  Re-read the source with --force-ocr, or keep everything with "
+            "--keep-front-matter."
+        )
 
     # Gates are measured on the body, not the whole PDF: a contents page is dot leaders
     # and a copyright page is legal boilerplate, and neither says anything about whether
