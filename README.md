@@ -9,7 +9,7 @@ built from, and answers four questions:
 4. Is what survived arranged in a teachable way?
 
 ```
-input/*.pdf  ──pdftoppm + tesseract──▶  source text  ──clause split──▶  claims
+input/*.pdf  ──PyMuPDF + tesseract──▶  source text  ──clause split──▶  claims
 output/*.mp3 ──faster-whisper───────▶  transcripts   ──sentence split──▶  units
                     claims × units ──MiniLM embeddings──▶ coverage matrix ──▶ findings
                     (optional) ──────────────────────────▶ Claude adjudication
@@ -27,11 +27,16 @@ You need an interpreter that can import `faster_whisper`, `ctranslate2`,
 already has them or build one from `requirements.txt` — both are below.
 
 **System packages first.** These are not pip-installable, and OCR does not run without
-the first two:
+`tesseract`:
 
 ```bash
-sudo apt install poppler-utils tesseract-ocr ffmpeg wamerican wbritish
+sudo apt install tesseract-ocr ffmpeg wamerican wbritish     # Debian/Ubuntu
+sudo dnf install tesseract ffmpeg-free words                 # RHEL/CentOS/Fedora
 ```
+
+`tesseract` is the only required binary. Rendering PDF pages is PyMuPDF's job (a pip
+package, in `requirements.txt`), not poppler's — so there is nothing to install as root
+for the PDF side, which matters on a box where you would rather not.
 
 `ffmpeg` supplies `ffprobe`, used only for audio duration when Whisper doesn't report it.
 The two word lists back the lexical gate — without them `--check` prints
@@ -131,8 +136,8 @@ simply are not in there yet.
 | | |
 |---|---|
 | Interpreter | `/home/crimson/sites/phansora-api/.venv/bin/python`, or a Python 3.11 venv built from `requirements.txt` |
-| Binaries | `pdftoppm`, `tesseract` (required) · `pdftotext`, `ffprobe` (used when present) |
-| Packages | `faster_whisper`, `ctranslate2`, `sentence_transformers`, `numpy`, `torch` · `pillow` + `scipy` sharpen OCR · `anthropic` for the optional pass |
+| Binaries | `tesseract` (required, PDF path only) · `ffprobe` (used when present) |
+| Packages | `faster_whisper`, `ctranslate2`, `sentence_transformers`, `numpy`, `torch` · `fitz` (PyMuPDF) for the PDF path · `pillow` + `scipy` sharpen OCR · `anthropic` for the optional pass |
 | Credentials | `ANTHROPIC_API_KEY` or `ANTHROPIC_AUTH_TOKEN`, optional |
 
 `requirements.txt` holds the exact versions this has been run against, with the reason for

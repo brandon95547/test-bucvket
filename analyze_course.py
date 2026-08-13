@@ -13,7 +13,7 @@ answering four questions:
 
 Pipeline
 --------
-  PDF  --pdftoppm+tesseract-->  source text  --clause split-->  claims
+  PDF  --PyMuPDF+tesseract-->  source text  --clause split-->  claims
   MP3s --faster-whisper------>  lesson transcripts --sentence split--> units
   claims x units --MiniLM embeddings + lexical/entity checks--> coverage matrix
   coverage matrix --> deterministic findings
@@ -644,15 +644,25 @@ def ocr_pdf(pdf: Path, force: bool) -> tuple[str, float, list[OcrLine]]:
         lines = [OcrLine(tuple(l["key"]), l["text"], l["conf"], l["run"]) for l in d["lines"]]
         return d["text"], d["confidence"], lines
 
-    if not shutil.which("pdftoppm") or not shutil.which("tesseract"):
-        raise SystemExit("need poppler-utils (pdftoppm) and tesseract on PATH")
+    if not shutil.which("tesseract"):
+        raise SystemExit("need tesseract on PATH")
 
-    # An embedded text layer beats any amount of OCR — use it when the PDF has one.
-    if shutil.which("pdftotext"):
-        embedded = subprocess.run(
-            ["pdftotext", "-layout", str(pdf), "-"],
-            capture_output=True, text=True, check=False,
-        ).stdout
+    # PDF -> page images via PyMuPDF rather than poppler's pdftoppm, so the only
+    # system binary this tool needs is tesseract itself. phansora-api rasterizes
+    # the same way (products/spokenverse/services/pdf_render.py), which is why the
+    # venv named in README.md already satisfies this.
+    try:
+        import fitz  # PyMuPDF
+    except ImportError:
+        raise SystemExit(
+            "need PyMuPDF to read PDFs: pip install pymupdf "
+            "(already present in the phansora-api venv — see README.md)"
+        )
+
+    doc = fitz.open(str(pdf))
+    try:
+        # An embedded text layer beats any amount of OCR — use it when the PDF has one.
+        embedded = "\n".join(page.get_text() for page in doc)
         if len(embedded.strip()) > 200:
             lines = [OcrLine((0, 0, 0, i), t.strip(), 100.0, "pdf-text-layer")
                      for i, t in enumerate(embedded.splitlines()) if t.strip()]
@@ -662,16 +672,24 @@ def ocr_pdf(pdf: Path, force: bool) -> tuple[str, float, list[OcrLine]]:
                            for l in lines]}, indent=2), encoding="utf-8")
             return embedded, 100.0, lines
 
-    render_dir = WORK_DIR / "pages"
-    render_dir.mkdir(parents=True, exist_ok=True)
-    subprocess.run(
-        ["pdftoppm", "-r", str(OCR_RENDER_DPI), "-gray", "-png",
-         str(pdf), str(render_dir / "pg")],
-        check=True,
-    )
+        render_dir = WORK_DIR / "pages"
+        render_dir.mkdir(parents=True, exist_ok=True)
+        # Grayscale at OCR_RENDER_DPI, matching what pdftoppm -gray -r produced.
+        # Zero-padded like pdftoppm so the pages sort in reading order, and collected
+        # as an explicit list rather than re-globbed: _preprocess() drops its own
+        # "__prep.png" beside each page, which a glob picks up as if it were one.
+        matrix = fitz.Matrix(OCR_RENDER_DPI / 72.0, OCR_RENDER_DPI / 72.0)
+        pad = max(2, len(str(doc.page_count)))
+        page_pngs: list[Path] = []
+        for n, page in enumerate(doc, start=1):
+            out = render_dir / f"pg-{n:0{pad}d}.png"
+            page.get_pixmap(matrix=matrix, colorspace=fitz.csGRAY, alpha=False).save(str(out))
+            page_pngs.append(out)
+    finally:
+        doc.close()
 
     all_lines: list[OcrLine] = []
-    for page_no, png in enumerate(sorted(render_dir.glob("pg-[0-9]*.png"))):
+    for page_no, png in enumerate(page_pngs):
         prepped = _preprocess(png)
         runs = []
         for img, label in ((png, "raw"), (prepped, "prep")):
@@ -1720,8 +1738,7 @@ def preflight(tr: Transcriber, reason: str, gate: float, lex_gate: float) -> int
         row("source text", str(SIDECAR_SOURCE), SIDECAR_SOURCE.exists())
 
     print("\nbinaries")
-    for name, required in (("pdftoppm", need_pdf), ("tesseract", need_pdf),
-                           ("pdftotext", False), ("ffprobe", False)):
+    for name, required in (("tesseract", need_pdf), ("ffprobe", False)):
         found = shutil.which(name)
         if required:
             row(name, found or "NOT FOUND", bool(found))
@@ -1732,7 +1749,7 @@ def preflight(tr: Transcriber, reason: str, gate: float, lex_gate: float) -> int
     print("\npython packages")
     for mod, required in (("faster_whisper", True), ("ctranslate2", True),
                           ("sentence_transformers", True), ("numpy", True),
-                          ("torch", False), ("anthropic", False)):
+                          ("fitz", need_pdf), ("torch", False), ("anthropic", False)):
         try:
             m = __import__(mod)
             ver = getattr(m, "__version__", "?")
