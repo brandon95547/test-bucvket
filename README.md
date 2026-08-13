@@ -1,19 +1,35 @@
 # test-bucvket — course audit harness
 
 `analyze_course.py` audits a generated audio course against the source document it was
-built from, and answers four questions:
+built from, and answers two questions:
 
-1. Does the audio carry all the context from the original, without padding or repeating it?
-2. Did the AI invent anything that is not in the source?
-3. What percentage of the source survives, and what exactly is missing?
-4. Is what survived arranged in a teachable way?
+1. **Is the audio re-worded, or is it the book read aloud?** What percentage of the
+   spoken words are word-for-word from the book — the number that answers "someone
+   could say this is just a literal copy of that book".
+2. **Is any of the book's content missing?** What percentage of the book is present in
+   the audio, and exactly which statements are not.
 
 ```
-input/*.pdf  ──PyMuPDF + tesseract──▶  source text  ──clause split──▶  claims
+input/*.pdf  ──PyMuPDF + tesseract──▶  page text ──strip non-body──▶ body ──▶ claims
 output/*.mp3 ──faster-whisper───────▶  transcripts   ──sentence split──▶  units
-                    claims × units ──MiniLM embeddings──▶ coverage matrix ──▶ findings
-                    (optional) ──────────────────────────▶ Claude adjudication
+
+     body × narration ──word-run matching──▶  how much is verbatim     (question 1)
+     claims × units   ──MiniLM embeddings──▶  what is covered/missing  (question 2)
 ```
+
+**No LLM is involved.** Both numbers are computed, so the same inputs always produce the
+same report and it runs on a box with no API credentials.
+
+### What counts as "the book"
+
+Coverage is measured against the **body text only**. Before anything is compared, the
+script drops the title and copyright pages, the table of contents, and any back matter
+(appendix, bibliography, index) — nobody narrates those, and leaving them in would count
+them as missing content and understate coverage.
+
+That filtering is reported, not hidden: `REPORT.md` lists every page that was dropped
+and why, so a wrong call is visible. `--whole-document` disables it. The back-matter
+headings live in `BACK_MATTER_HEADINGS` in the script if a book needs a different list.
 
 Everything expensive is cached in `work/`, so re-runs are cheap — which is also the main
 way to get a wrong answer. See [Read this before your first run](#read-this-before-your-first-run).
@@ -92,9 +108,6 @@ missing binary now and finding it after a long transcription pass.
 `--input-pdf` is needed because the script defaults to `input/original.pdf` and the PDF
 sitting there has a different name. `--force-ocr` is explained below.
 
-Add `--no-llm` if you have no `ANTHROPIC_API_KEY` — without it the Claude pass is skipped
-anyway, but with a warning rather than silently.
-
 ---
 
 ## Read this before your first run
@@ -108,7 +121,7 @@ but a naive re-run will produce a confident, wrong report.
 | `output/` | 2 MP3s for that same course |
 | `work/ocr.json`, `work/pages/` | OCR of a **different** book — *The Book of Wisdom* |
 | `work/transcripts/` | 8 lesson transcripts from that **same other** course |
-| `REPORT.md`, `report.json`, `verdict.json` | Output of that other run, not of `input/` |
+| `REPORT.md`, `report.json` | Output of that other run, not of `input/` — both are overwritten by the next run |
 | `source_corrected.txt` | A 1940 business letter. Unrelated to either. |
 
 Two consequences:
@@ -137,8 +150,7 @@ simply are not in there yet.
 |---|---|
 | Interpreter | `/home/crimson/sites/phansora-api/.venv/bin/python`, or a Python 3.11 venv built from `requirements.txt` |
 | Binaries | `tesseract` (required, PDF path only) · `ffprobe` (used when present) |
-| Packages | `faster_whisper`, `ctranslate2`, `sentence_transformers`, `numpy`, `torch` · `fitz` (PyMuPDF) for the PDF path · `pillow` + `scipy` sharpen OCR · `anthropic` for the optional pass |
-| Credentials | `ANTHROPIC_API_KEY` or `ANTHROPIC_AUTH_TOKEN`, optional |
+| Packages | `faster_whisper`, `ctranslate2`, `sentence_transformers`, `numpy`, `torch` · `fitz` (PyMuPDF) for the PDF path · `pillow` + `scipy` sharpen OCR |
 
 `requirements.txt` holds the exact versions this has been run against, with the reason for
 each one. `--check` prints the whole table above with a resolved value per row, so treat
@@ -169,8 +181,8 @@ this tool would then report as missing content.
 
 ```
 --check                    resolve everything and exit without doing work
---no-llm                   deterministic report only, no Claude pass
---adjudication FILE        reuse a saved adjudication JSON instead of calling the API
+--whole-document           measure against every page, contents and appendix included
+--verbatim-shingle N       word-run length that counts as lifted (default 8)
 --force-ocr                redo OCR even if work/ocr.json exists
 --force-transcribe         redo Whisper even if transcripts are cached
 ```
@@ -214,12 +226,11 @@ different tree:
 
 | File | Contents |
 |---|---|
-| `REPORT.md` | The readable audit — coverage tables, findings, per-lesson breakdown |
-| `report.json` | The same data structured, including the full coverage matrix |
-| `verdict.json` | The Claude adjudication, when the LLM pass runs |
-| `work/` | Caches: page renders, `ocr.json`, per-lesson transcripts, `signals.txt` |
+| `REPORT.md` | The readable audit — the two answers, the per-lesson split, what is missing, and which pages were excluded |
+| `report.json` | The same data structured: `reworded_percent`, `present_percent`, every claim with its status, and the excluded pages |
+| `work/` | Caches: page renders, `ocr.json`, per-lesson transcripts |
 
-`work/` is gitignored; the three report files are not.
+`work/` is gitignored; the two report files are not.
 
 Coverage percentages come from sentence-embedding similarity plus entity and number
 grounding against the parsed source statements. They measure *this parse*, not ground

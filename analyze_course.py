@@ -3,23 +3,26 @@
 analyze_course.py — audit an audio course against its source document.
 
 Compares the MP3s in output/ against input/original.pdf and writes a report
-answering four questions:
+answering two questions:
 
-  1. Do the audio files carry all the context from the original, without
-     duplicating or padding it?
-  2. Did the AI invent anything that is not in the original?
-  3. What percentage of the original survives, and what exactly is missing?
-  4. Is what survived arranged in a teachable way?
+  1. Is the narration re-worded, or is it the book read aloud? What percentage of
+     the spoken words are word-for-word from the book?
+  2. Is any of the book's content missing from the audio, and exactly what?
+
+"The book" means its body text. Title page, copyright page, table of contents and
+back matter (appendix, bibliography, index) are excluded before anything is measured
+— nobody narrates those, and counting them as missing would understate coverage.
+The report lists every page that was dropped and why.
 
 Pipeline
 --------
-  PDF  --PyMuPDF+tesseract-->  source text  --clause split-->  claims
+  PDF  --PyMuPDF+tesseract-->  page text --strip non-body--> body --clause split--> claims
   MP3s --faster-whisper------>  lesson transcripts --sentence split--> units
-  claims x units --MiniLM embeddings + lexical/entity checks--> coverage matrix
-  coverage matrix --> deterministic findings
-  (optional) source + transcripts --> Claude adjudication --> qualitative verdict
+  body x narration --word-run matching--------> how much is verbatim  (question 1)
+  claims x units  --MiniLM embeddings + lexical/entity checks--> coverage  (question 2)
 
-Everything expensive is cached under work/ so re-runs are cheap.
+No model judges the result: both numbers are computed, so the same inputs always
+give the same report. Everything expensive is cached under work/ so re-runs are cheap.
 
 Runtime
 -------
@@ -40,7 +43,6 @@ Check the box before committing to a long run:
 
 Usage
 -----
-  ... --no-llm                skip the Claude pass (deterministic report only)
   ... --device cuda|cpu|auto  override device selection
   ... --compute-type float16  override precision
   ... --whisper-model medium.en
@@ -181,8 +183,6 @@ COVERED_EMB = 0.60          # cosine sim above which a claim counts as covered
 PARTIAL_EMB = 0.42          # ...and above which it counts as partial
 COVERED_LEX = 0.55          # content-token F1 above which a claim counts as covered
 PARTIAL_LEX = 0.35
-NEAR_DUP_EMB = 0.82         # two output sentences this close say the same thing
-UNGROUNDED_EMB = 0.38       # an output sentence this far from every claim is unsourced
 ENTITY_FUZZ = 0.72          # name-match tolerance, to survive speech-recognition garble
 
 
@@ -229,10 +229,14 @@ def normalize_source(raw: str) -> str:
     text = unicodedata.normalize("NFKC", raw)
     text = text.replace("’", "'").replace("‘", "'")
     text = text.replace("“", '"').replace("”", '"')
-    # de-hyphenate words split across lines
-    text = re.sub(r"(\w)-\s*\n\s*(\w)", r"\1\2", text)
-    # keep paragraph structure, collapse in-paragraph wrapping
-    text = re.sub(r"\n\s*\n", "\n\n", text)
+    # de-hyphenate words split across lines. The space before the hyphen is not a typo:
+    # justified academic typesetting breaks as "Oxy rhyn -\nchus", and without allowing
+    # it the tail lands in the next sentence as a bare fragment ("chus, and about to…").
+    text = re.sub(r"(\w)[ \t]*-[ \t]*\n[ \t]*(\w)", r"\1\2", text)
+    # keep paragraph structure, collapse in-paragraph wrapping. \f is excluded from the
+    # blank-line collapse by hand: it is whitespace, so "\n\f\n" matches \n\s*\n and the
+    # page break would be normalized away before body_text() ever saw it.
+    text = re.sub(r"\n[ \t\r\v]*\n", "\n\n", text)
     text = re.sub(r"(?<!\n)\n(?!\n)", " ", text)
     text = re.sub(r"[ \t]+", " ", text)
     return text.strip()
@@ -357,6 +361,141 @@ def is_scaffold(sentence: str) -> bool:
 def is_boilerplate(text: str) -> bool:
     low = text.lower()
     return any(re.search(p, low) for p in BOILERPLATE_PATTERNS)
+
+
+# A page break in the source text. pdftotext writes one between pages and this tool
+# emits one per rendered/extracted page, so page structure survives into the string
+# that everything downstream reads.
+PAGE_SEP = "\f"
+
+# Headings that open back matter. A book's appendices, bibliography and index sit at
+# the END, so the first page whose heading matches ends the body: everything from
+# there on is apparatus. Widen or narrow this list to change what "the book's content"
+# means — whatever it drops is listed in the report, so a wrong call is visible rather
+# than silent.
+BACK_MATTER_HEADINGS = (
+    r"appendix(?:\s+[a-z0-9]+)?",
+    r"bibliography",
+    r"index",
+    r"works cited",
+)
+
+_DOT_LEADER = re.compile(r"\.\s*\.\s*\.\s*\.")
+_FOLIO = re.compile(r"^(?:\d{1,4}|[ivxlcdm]{1,7})$", re.I)
+
+
+def _page_lines(page: str) -> list[str]:
+    return [l.strip() for l in page.splitlines() if l.strip()]
+
+
+def _is_contents_page(page: str) -> bool:
+    """A table of contents is headings joined to page numbers by dot leaders.
+
+    The "Table of Contents" heading only appears on the FIRST of what may be several
+    contents pages, so the leaders — not the heading — are the reliable signal.
+    """
+    lines = _page_lines(page)
+    if not lines:
+        return False
+    if re.match(r"^(table of )?contents?\b", lines[0], re.I):
+        return True
+    return sum(1 for l in lines if _DOT_LEADER.search(l)) >= 3
+
+
+def _is_prose(page: str) -> bool:
+    """Does this page read like the book, rather than like its packaging?
+
+    Half-title, series and title pages are lists of names set large — many words, no
+    sentences. Requiring both length and sentence-ends separates them from chapter
+    text without needing to know what any particular book puts up front.
+    """
+    words = len(re.findall(r"[A-Za-z'’]+", page))
+    sentences = len(re.findall(r"[a-z]{2}[.!?](?:\s|$)", page))
+    return words >= 120 and sentences >= 3
+
+
+def _opens_back_matter(page: str) -> str | None:
+    """The heading that ends the body, if this page carries one."""
+    for line in _page_lines(page)[:3]:
+        for pat in BACK_MATTER_HEADINGS:
+            if re.fullmatch(pat, line, re.I):
+                return line
+    return None
+
+
+def _running_heads(pages: list[str]) -> set[str]:
+    """Chapter/section names reprinted at the top of every page.
+
+    They are navigation, not prose: left in, each one becomes a repeated 'claim' that
+    the narration is then marked as failing to cover. Detected by repetition rather
+    than by pattern, so this needs no per-book configuration.
+    """
+    counts: dict[str, int] = {}
+    for page in pages:
+        for line in _page_lines(page)[:2]:
+            if len(line) <= 70 and not line[-1:] in ".:;,":
+                counts[line.lower()] = counts.get(line.lower(), 0) + 1
+    return {head for head, n in counts.items() if n >= 3}
+
+
+def body_text(source: str) -> tuple[str, list[dict]]:
+    """The book's actual content, and a record of everything dropped to get there.
+
+    Answers "is anything missing from the course" honestly by first deciding what
+    "the book" means: not its title page, copyright notice, table of contents or
+    appendices — nobody narrates those, and counting them as missing content would
+    understate coverage by whatever share of the PDF they happen to occupy.
+
+    Returns (text, excluded) where each excluded entry says which page went and why.
+    """
+    pages = source.split(PAGE_SEP)
+    heads = _running_heads(pages)
+    kept: list[str] = []
+    excluded: list[dict] = []
+    back_matter_from: str | None = None
+    in_front_matter = True          # until the first page that reads like the book
+
+    for n, page in enumerate(pages, start=1):
+        preview = " ".join(_page_lines(page)[:2])[:80].replace("|", "\\|")
+
+        if back_matter_from is not None:
+            excluded.append({"page": n, "reason": f"back matter ({back_matter_from})",
+                             "preview": preview})
+            continue
+
+        opener = _opens_back_matter(page)
+        if opener:
+            back_matter_from = opener
+            excluded.append({"page": n, "reason": f"back matter ({opener})",
+                             "preview": preview})
+            continue
+
+        if _is_contents_page(page):
+            excluded.append({"page": n, "reason": "table of contents", "preview": preview})
+            continue
+
+        if is_boilerplate(page):
+            excluded.append({"page": n, "reason": "front matter (copyright/ISBN)",
+                             "preview": preview})
+            continue
+
+        # Front matter only counts as front matter until the book starts. After that a
+        # short page is a short page — a chapter opening or a plate — not packaging.
+        if in_front_matter:
+            if not _is_prose(page):
+                excluded.append({"page": n, "reason": "front matter (no body text)",
+                                 "preview": preview})
+                continue
+            in_front_matter = False
+
+        body = [l for l in _page_lines(page)
+                if not _FOLIO.match(l) and l.lower() not in heads]
+        if not body:
+            excluded.append({"page": n, "reason": "no body text", "preview": preview})
+            continue
+        kept.append("\n".join(body))
+
+    return "\n\n".join(kept), excluded
 
 
 def bare_words(text: str) -> list[str]:
@@ -636,13 +775,19 @@ def _vote(runs: list[list[OcrLine]]) -> tuple[list[OcrLine], float]:
     return merged, conf
 
 
-def ocr_pdf(pdf: Path, force: bool) -> tuple[str, float, list[OcrLine]]:
-    """Multi-pass OCR. Returns (text, mean confidence 0-100, per-line detail)."""
+def ocr_pdf(pdf: Path, force: bool) -> tuple[str, float, list[OcrLine], str]:
+    """Read the PDF. Returns (text, mean confidence 0-100, per-line detail, method).
+
+    method is "text-layer" when the text came out of the PDF losslessly and "ocr"
+    when it was read off a page image. Callers need the difference: the confidence
+    and dictionary gates exist to catch OCR misreads, and there are none to catch
+    in a text layer.
+    """
     cache = WORK_DIR / "ocr.json"
     if cache.exists() and not force:
         d = json.loads(cache.read_text(encoding="utf-8"))
         lines = [OcrLine(tuple(l["key"]), l["text"], l["conf"], l["run"]) for l in d["lines"]]
-        return d["text"], d["confidence"], lines
+        return d["text"], d["confidence"], lines, d.get("method", "ocr")
 
     if not shutil.which("tesseract"):
         raise SystemExit("need tesseract on PATH")
@@ -662,7 +807,9 @@ def ocr_pdf(pdf: Path, force: bool) -> tuple[str, float, list[OcrLine]]:
     doc = fitz.open(str(pdf))
     try:
         # An embedded text layer beats any amount of OCR — use it when the PDF has one.
-        embedded = "\n".join(page.get_text() for page in doc)
+        # Joined on PAGE_SEP, not "\n": body_text() needs the page boundaries to tell a
+        # contents page or an appendix from the chapter next to it.
+        embedded = PAGE_SEP.join(page.get_text() for page in doc)
         if len(embedded.strip()) > 200:
             lines = [OcrLine((0, 0, 0, i), t.strip(), 100.0, "pdf-text-layer")
                      for i, t in enumerate(embedded.splitlines()) if t.strip()]
@@ -670,7 +817,7 @@ def ocr_pdf(pdf: Path, force: bool) -> tuple[str, float, list[OcrLine]]:
                 {"text": embedded, "confidence": 100.0,
                  "lines": [{"key": list(l.key), "text": l.text, "conf": l.conf, "run": l.run}
                            for l in lines]}, indent=2), encoding="utf-8")
-            return embedded, 100.0, lines
+            return embedded, 100.0, lines, "text-layer"
 
         render_dir = WORK_DIR / "pages"
         render_dir.mkdir(parents=True, exist_ok=True)
@@ -698,29 +845,41 @@ def ocr_pdf(pdf: Path, force: bool) -> tuple[str, float, list[OcrLine]]:
         merged, _ = _vote(runs)
         all_lines.extend(merged)
 
-    text = "\n".join(l.text for l in all_lines)
+    # Page-separated for body_text(); OcrLine.key[0] is the page the line came from.
+    by_page: dict[int, list[str]] = {}
+    for l in all_lines:
+        by_page.setdefault(l.key[0], []).append(l.text)
+    text = PAGE_SEP.join("\n".join(by_page[p]) for p in sorted(by_page))
     conf = sum(l.conf for l in all_lines) / len(all_lines) if all_lines else 0.0
     cache.write_text(json.dumps(
-        {"text": text, "confidence": conf,
+        {"text": text, "confidence": conf, "method": "ocr",
          "lines": [{"key": list(l.key), "text": l.text, "conf": l.conf, "run": l.run}
                    for l in all_lines]}, indent=2), encoding="utf-8")
-    return text, conf, all_lines
+    return text, conf, all_lines, "ocr"
 
 
-def load_source(force_ocr: bool) -> tuple[str, str, float, list[OcrLine]]:
-    """Returns (source text, provenance label, OCR confidence 0-100, line detail)."""
+def load_source(force_ocr: bool) -> tuple[str, str, float, list[OcrLine], str]:
+    """Returns (raw page-separated text, provenance, OCR confidence 0-100, line detail).
+
+    Deliberately NOT normalized: body_text() reads page breaks and line breaks to tell a
+    contents page from a chapter and a running header from a sentence, and normalizing
+    first unwraps every page into one long line. Callers normalize what they keep.
+    """
     if SIDECAR_SOURCE and SIDECAR_SOURCE.exists():
-        clean = normalize_source(SIDECAR_SOURCE.read_text(encoding="utf-8"))
-        return clean, f"corrected transcription supplied via --source-text ({SIDECAR_SOURCE.name})", 100.0, []
+        raw = SIDECAR_SOURCE.read_text(encoding="utf-8")
+        return raw, f"corrected transcription supplied via --source-text ({SIDECAR_SOURCE.name})", 100.0, [], "supplied"
 
     pdf = INPUT_PDF
     if not pdf.exists():
         raise SystemExit(f"missing {pdf}")
 
-    raw, conf, lines = ocr_pdf(pdf, force_ocr)
-    provenance = (f"{len(OCR_PSMS)}-mode tesseract OCR of {pdf.name}, raw + deskewed/thresholded, "
-                  f"per-line majority vote (mean confidence {conf:.1f}%)")
-    return normalize_source(raw), provenance, conf, lines
+    raw, conf, lines, method = ocr_pdf(pdf, force_ocr)
+    if method == "text-layer":
+        provenance = f"{pdf.name}'s embedded text layer, extracted losslessly with PyMuPDF"
+    else:
+        provenance = (f"{len(OCR_PSMS)}-mode tesseract OCR of {pdf.name}, raw + deskewed/thresholded, "
+                      f"per-line majority vote (mean confidence {conf:.1f}%)")
+    return raw, provenance, conf, lines, method
 
 
 def split_claims(source: str) -> list[Claim]:
@@ -1090,255 +1249,8 @@ def match(claims: list[Claim], units: list[Unit]):
     return units
 
 
-def near_duplicates(units: list[Unit]) -> list[tuple[Unit, Unit, float]]:
-    import numpy as np
-
-    substantive = [u for u in units if not u.scaffold and len(tokens(u.text)) >= 4]
-    if len(substantive) < 2:
-        return []
-    vecs = np.asarray(embed([u.text for u in substantive]))
-    sims = vecs @ vecs.T
-    pairs = []
-    for i in range(len(substantive)):
-        for j in range(i + 1, len(substantive)):
-            if sims[i][j] >= NEAR_DUP_EMB:
-                pairs.append((substantive[i], substantive[j], float(sims[i][j])))
-    pairs.sort(key=lambda p: -p[2])
-    return pairs
-
-
 # ---------------------------------------------------------------------------
-# stage 4 — Claude adjudication (optional)
-# ---------------------------------------------------------------------------
-
-ADJUDICATION_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "coverage_verdict": {"type": "string"},
-        "coverage_percent": {"type": "integer"},
-        "missing_from_course": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "source_fact": {"type": "string"},
-                    "why_it_matters": {"type": "string"},
-                },
-                "required": ["source_fact", "why_it_matters"],
-                "additionalProperties": False,
-            },
-        },
-        "fabrications": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "claim_in_audio": {"type": "string"},
-                    "lesson": {"type": "string"},
-                    "kind": {
-                        "type": "string",
-                        "enum": ["invented_fact", "outside_knowledge", "misreading",
-                                 "unsupported_inference", "likely_transcription_artifact"],
-                    },
-                    "explanation": {"type": "string"},
-                },
-                "required": ["claim_in_audio", "lesson", "kind", "explanation"],
-                "additionalProperties": False,
-            },
-        },
-        "redundancy": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "repeated_content": {"type": "string"},
-                    "lessons": {"type": "string"},
-                    "justified": {"type": "boolean"},
-                    "note": {"type": "string"},
-                },
-                "required": ["repeated_content", "lessons", "justified", "note"],
-                "additionalProperties": False,
-            },
-        },
-        "teachability": {
-            "type": "object",
-            "properties": {
-                "verdict": {"type": "string"},
-                "strengths": {"type": "array", "items": {"type": "string"}},
-                "weaknesses": {"type": "array", "items": {"type": "string"}},
-            },
-            "required": ["verdict", "strengths", "weaknesses"],
-            "additionalProperties": False,
-        },
-        "originality": {
-            "type": "object",
-            "properties": {
-                "verdict": {"type": "string",
-                            "enum": ["taught", "mixed", "largely recited"]},
-                "note": {"type": "string"},
-            },
-            "required": ["verdict", "note"],
-            "additionalProperties": False,
-        },
-        "bottom_line": {"type": "string"},
-    },
-    "required": ["coverage_verdict", "coverage_percent", "missing_from_course",
-                 "fabrications", "originality", "redundancy", "teachability",
-                 "bottom_line"],
-    "additionalProperties": False,
-}
-
-ADJUDICATION_PROMPT = """\
-You are auditing an AI-generated audio course against its single source document.
-
-The source is reproduced verbatim below — read what kind of document it actually is
-rather than assuming a form. The course is {n} narrated lessons. The lesson text
-below is a speech-to-text transcript of the delivered audio, so misspelled proper
-nouns and odd word choices may be transcription artifacts rather than authoring
-errors — label those `likely_transcription_artifact` rather than `invented_fact`
-when the surrounding sentence clearly tracks the source.
-
-The standard is teaching equivalence: would someone who only listened come away
-knowing what someone who read the document knows? Judge the *content*. Attribution,
-authorship, title and copyright are explicitly out of scope — do not report them as
-gaps, and do not count them toward or against coverage.
-
-Anything asserted in the audio that the source does not support is still a finding,
-including outside knowledge presented as though it came from the source.
-
-Weigh the medium honestly. Where the source teaches through an image, diagram or
-table, a listener has no picture; narration that recites a caption without explaining
-it transfers nothing, however faithful it is to the words. That is a teaching failure
-even though it scores as covered.
-
-<source_document>
-{source}
-</source_document>
-
-<course_lessons>
-{lessons}
-</course_lessons>
-
-<mechanical_analysis>
-A deterministic pass (sentence embeddings + entity/number grounding) produced these
-signals. Treat them as leads to verify, not conclusions:
-
-{signals}
-</mechanical_analysis>
-
-Answer five questions:
-1. Would a listener finish knowing what a reader knows? Give `coverage_percent` as
-   your own judgement of the share of the source's teachable content that actually
-   transfers through audio (not a token count, and not counting front matter).
-2. Did the course invent, import, or misread anything?
-3. Is the course teaching the material or reciting it? The mechanical pass reports
-   what share of narration is copied word-for-word and quotes the longest runs. Set
-   `originality.verdict` to one of `taught`, `mixed`, or `largely recited`, and say in
-   `note` what the course does in its own words versus what it lifts. Discount runs
-   that are scripture or another quoted third text — the source quoting a verse and
-   the course quoting the same verse is not the course copying the source.
-4. What is repeated across lessons, and is the repetition pedagogically justified or
-   just padding?
-5. Is the surviving content arranged so a listener actually learns it?
-
-Be specific and quote the audio. Do not pad the lists — only real findings.
-"""
-
-
-def adjudicate(source: str, lessons: list[tuple[str, str]], signals: str) -> dict | None:
-    try:
-        import anthropic
-    except ImportError:
-        print("  anthropic SDK not installed — skipping Claude pass", file=sys.stderr)
-        return None
-
-    try:
-        client = anthropic.Anthropic()
-    except Exception as exc:                                  # noqa: BLE001
-        print(f"  no Anthropic credentials — skipping Claude pass ({exc})", file=sys.stderr)
-        return None
-
-    lesson_block = "\n\n".join(
-        f"<lesson name=\"{name}\">\n{text}\n</lesson>" for name, text in lessons
-    )
-    prompt = ADJUDICATION_PROMPT.format(
-        n=len(lessons), source=source, lessons=lesson_block, signals=signals
-    )
-
-    try:
-        with client.messages.stream(
-            model="claude-opus-5",
-            max_tokens=16000,
-            thinking={"type": "adaptive"},
-            output_config={
-                "effort": "high",
-                "format": {"type": "json_schema", "schema": ADJUDICATION_SCHEMA},
-            },
-            messages=[{"role": "user", "content": prompt}],
-        ) as stream:
-            message = stream.get_final_message()
-    except Exception as exc:                                  # noqa: BLE001
-        print(f"  Claude pass failed: {exc}", file=sys.stderr)
-        return None
-
-    if message.stop_reason == "refusal":
-        print("  Claude declined the request — skipping adjudication", file=sys.stderr)
-        return None
-
-    text = next((b.text for b in message.content if b.type == "text"), "")
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        print("  Claude returned unparseable JSON — skipping adjudication", file=sys.stderr)
-        return None
-
-
-def signal_digest(claims: list[Claim], units: list[Unit], dups,
-                  lifted: dict | None = None) -> str:
-    lines = []
-    if lifted:
-        lines.append(
-            f"- verbatim overlap: {lifted['percent']:.1f}% of narrated words sit inside "
-            f"a run of {lifted['shingle']}+ consecutive words copied from the source "
-            f"({len(lifted['runs'])} runs). Longest runs:")
-        for r in lifted["runs"][:12]:
-            lines.append(f'    * [{r["length"]} words, {r["lesson"]}] "{r["text"][:220]}"')
-    miss = [c for c in claims if c.status == "missing"]
-    part = [c for c in claims if c.status == "partial"]
-    lines.append(f"- {len(claims)} source claims: "
-                 f"{sum(1 for c in claims if c.status == 'covered')} covered, "
-                 f"{len(part)} partial, {len(miss)} missing")
-    if miss:
-        lines.append("- flagged missing:")
-        for c in miss[:25]:
-            lines.append(f'    * "{c.text}"  (best sim {c.best_emb:.2f})')
-    if part:
-        lines.append("- flagged partial / detail dropped:")
-        for c in part[:25]:
-            detail = ""
-            if c.dropped_numbers or c.dropped_entities:
-                detail = f"  [dropped: {', '.join(c.dropped_numbers + c.dropped_entities)}]"
-            lines.append(f'    * "{c.text}"{detail}')
-    ung = [u for u in units if not u.scaffold and u.best_emb < UNGROUNDED_EMB]
-    if ung:
-        lines.append("- audio sentences with no close source match:")
-        for u in ung[:25]:
-            lines.append(f'    * [{u.lesson}] "{u.text}" (sim {u.best_emb:.2f})')
-    ent = [u for u in units if u.ungrounded_entities or u.ungrounded_numbers]
-    if ent:
-        lines.append("- names/numbers in audio not found in source:")
-        for u in ent[:25]:
-            bits = u.ungrounded_entities + u.ungrounded_numbers
-            lines.append(f'    * [{u.lesson}] {", ".join(bits)} — "{u.text}"')
-    if dups:
-        lines.append("- near-duplicate statements across lessons:")
-        for a, b, s in dups[:20]:
-            lines.append(f'    * {s:.2f}  [{a.lesson}] "{a.text}"  ||  [{b.lesson}] "{b.text}"')
-    return "\n".join(lines)
-
-
-# ---------------------------------------------------------------------------
-# stage 5 — report
+# stage 4 — report
 # ---------------------------------------------------------------------------
 
 def pct(n: int, d: int) -> float:
@@ -1418,284 +1330,199 @@ def render_ocr_refusal(source: str, provenance: str, conf: float, gate: float,
     return "\n".join(L)
 
 
-def render(source: str, provenance: str, ocr_conf: float, gate: float,
-           ocr_lex: float, lex_gate: float, gate_bypassed: bool,
-           claims: list[Claim], units: list[Unit], lessons: list[tuple[str, str]],
-           dups, durations: dict[str, float], verdict: dict | None,
-           tr: "Transcriber", lifted: dict,
-           front_matter: list[Claim]) -> str:
+def _originality_reading(verbatim_pct: float) -> str:
+    """Plain-English reading of the verbatim share.
+
+    Bands, not a legal opinion: this measures word-for-word overlap, which is evidence
+    about copying but is not the whole of what "a copy" means to a lawyer. Say what was
+    measured and let the reader draw the conclusion.
+    """
+    if verbatim_pct < 5:
+        return ("The narration is told in its own words. Almost nothing in the audio "
+                "matches the book word for word.")
+    if verbatim_pct < 15:
+        return ("The narration is substantially re-worded. The word-for-word overlap "
+                "is small and, at this level, is usually quotation rather than copying.")
+    if verbatim_pct < 30:
+        return ("The narration is re-worded, but a meaningful share of it is word for "
+                "word. Read the longest runs below and satisfy yourself that they are "
+                "quotations you meant to keep.")
+    return ("A large share of the narration is word for word. At this level the audio "
+            "reads as the book being read aloud in places, not retold.")
+
+
+def _coverage_reading(present_pct: float, missing: int) -> str:
+    if missing == 0:
+        return "Every statement in the book's body text is represented in the audio."
+    if present_pct >= 90:
+        return (f"Nearly all of the book is present. {missing} statement(s) have no "
+                f"match in the audio — listed below.")
+    if present_pct >= 70:
+        return (f"Most of the book is present, but {missing} statement(s) are absent "
+                f"from the audio entirely.")
+    return (f"Substantial parts of the book are not in the audio: {missing} statement(s) "
+            f"have no match.")
+
+
+def render(body: str, provenance: str, ocr_conf: float, gate: float,
+           lex: float, lex_gate: float, gate_bypassed: bool,
+           claims: list[Claim], lessons: list[tuple[str, str]],
+           tr: Transcriber, lifted: dict,
+           excluded: list[dict], shingle: int) -> str:
+    """The whole report: two questions, answered, plus what they were measured against."""
+    L: list[str] = []
+    A = L.append
 
     covered = [c for c in claims if c.status == "covered"]
     partial = [c for c in claims if c.status == "partial"]
     missing = [c for c in claims if c.status == "missing"]
+    total = len(claims)
+    present_pct = pct(len(covered) + len(partial), total)
 
-    src_words = len(re.findall(r"\w+", source))
-    out_words = sum(len(re.findall(r"\w+", t)) for _, t in lessons)
-    total_secs = sum(durations.values())
+    verbatim_pct = lifted["percent"]
+    reworded_pct = 100.0 - verbatim_pct
+    longest = max((r["length"] for r in lifted["runs"]), default=0)
 
-    substantive = [u for u in units if not u.scaffold]
-    scaffold_n = len(units) - len(substantive)
-    ungrounded = [u for u in substantive if u.best_emb < UNGROUNDED_EMB]
-    ent_flags = [u for u in units if u.ungrounded_entities or u.ungrounded_numbers]
-
-    L = []
-    A = L.append
-
-    A("# Audio course vs. source document — audit report")
+    A(f"# Course audit — {INPUT_PDF.name}")
     A("")
-    A(f"- **Source:** `{INPUT_PDF.name}` — {provenance}")
-    A(f"- **Course:** {len(lessons)} lessons, {total_secs/60:.1f} min of audio")
-    A(f"- **Audio transcribed with:** faster-whisper `{tr.model_name}` on "
-      f"`{tr.device}/{tr.compute_type}` (beam {tr.beam_size}, VAD {'on' if tr.vad_filter else 'off'}). "
-      f"Wording below is the transcript, not the authoring text — some oddities are "
-      f"speech-recognition artifacts, and are labelled as such where identifiable.")
+    A(f"{len(lessons)} audio lesson(s) against the body text of {INPUT_PDF.name}.")
     A("")
 
     if gate_bypassed:
-        A(f"> ⚠️ **Numbers below are unreliable.** The source text failed a quality "
-          f"gate ({ocr_conf:.1f}% OCR confidence vs {gate:.0f}%; "
-          f"{ocr_lex:.1f}% dictionary validity vs {lex_gate:.0f}%) and this "
-          f"run was forced through with `--ignore-ocr-gate`. Words the scanner lost "
-          f"are indistinguishable here from content the course dropped, so treat every "
-          f"\"missing\" row as a lead to check by eye rather than a finding. Re-run "
-          f"with `--source-text` against a corrected transcription for figures worth "
-          f"quoting.")
+        A("> **The source text failed its quality gates and was scored anyway "
+          "(`--ignore-ocr-gate`).** Both numbers below are measured against text that "
+          "may be misread. Treat them as indicative, not final.")
         A("")
 
-    # ---- headline
-    A("## 1. Headline numbers")
+    # ---- question 1 -------------------------------------------------------
+    A("## 1. Is the audio re-worded, or a copy?")
     A("")
-    A("| Measure | Value |")
-    A("| --- | --- |")
-    A(f"| Source statements identified | {len(claims)} |")
-    A(f"| Fully carried into the audio | {len(covered)} ({pct(len(covered), len(claims)):.0f}%) |")
-    A(f"| Carried but with detail dropped | {len(partial)} ({pct(len(partial), len(claims)):.0f}%) |")
-    A(f"| Absent from the audio | {len(missing)} ({pct(len(missing), len(claims)):.0f}%) |")
-    A(f"| **Content coverage (full + partial)** | **{pct(len(covered)+len(partial), len(claims)):.0f}%** |")
-    A(f"| Source length | {src_words} words |")
-    A(f"| Course length | {out_words} words |")
-    A(f"| Expansion ratio | {out_words/max(src_words,1):.1f}x |")
-    A(f"| Narrated sentences | {len(units)} ({scaffold_n} teaching scaffold, {len(substantive)} content) |")
-    A(f"| Content sentences with no close source match | {len(ungrounded)} |")
-    A(f"| Sentences naming something absent from the source | {len(ent_flags)} |")
-    A(f"| Near-duplicate statement pairs across lessons | {len(dups)} |")
-    A(f"| **Narration lifted word-for-word from the source** | "
-      f"**{lifted['percent']:.0f}%** |")
+    A(f"### {reworded_pct:.1f}% re-worded")
     A("")
-    A("Read the last two rows together. Coverage should be high and lifted should be "
-      "low; a course that reads the source aloud scores well on the first *because* it "
-      "scores badly on the second. An expansion ratio near 1.0x is the same warning "
-      "from the other direction — teaching adds words, copying does not.")
+    A(f"{verbatim_pct:.1f}% of the narration — {lifted['lifted']:,} of "
+      f"{lifted['words']:,} spoken words — appears in the book word for word, counting "
+      f"any run of {shingle} or more consecutive words that match in order. "
+      f"The longest single unbroken run is **{longest} words**.")
+    A("")
+    A(_originality_reading(verbatim_pct))
     A("")
 
-    if front_matter:
-        A(f"<details><summary>{len(front_matter)} statement(s) excluded as front matter, "
-          f"not scored</summary>")
+    if lifted["per_lesson"]:
+        A("| Lesson | Spoken words | Word-for-word | Re-worded | Longest run |")
+        A("|---|---:|---:|---:|---:|")
+        for r in lifted["per_lesson"]:
+            A(f"| {r['lesson']} | {r['words']:,} | {r['percent']:.1f}% | "
+              f"{100.0 - r['percent']:.1f}% | {r['longest_run']} |")
         A("")
-        A("Attribution, title and copyright boilerplate. A course that omits these has "
-          "not failed the listener, so they are held out of the coverage numbers above. "
-          "Score them like any other statement with `--keep-front-matter`.")
+
+    long_runs = [r for r in lifted["runs"] if r["length"] >= shingle * 2][:10]
+    if long_runs:
+        A(f"<details><summary>The {len(long_runs)} longest word-for-word passages</summary>")
         A("")
-        for c in front_matter:
-            A(f"- `{c.idx:02d}` {c.text[:200]}{'…' if len(c.text) > 200 else ''}")
+        for r in long_runs:
+            A(f"- **{r['length']} words** · {r['lesson']}")
+            A(f"  > {r['text']}")
+        A("")
+        A("</details>")
+        A("")
+        A("_A book that quotes scripture or another primary source will show runs here "
+          "when the course quotes the same passage, without either having copied the "
+          "book's own writing. Check what the long runs actually are before reading "
+          "them as copying._")
+        A("")
+
+    # ---- question 2 -------------------------------------------------------
+    A("## 2. Is any of the book's content missing?")
+    A("")
+    A(f"### {present_pct:.1f}% of the book is present")
+    A("")
+    A(f"The book's body text breaks into {total} checkable statements. "
+      f"{len(covered)} are clearly present in the audio, {len(partial)} partly, "
+      f"and **{len(missing)} are absent**.")
+    A("")
+    A(_coverage_reading(present_pct, len(missing)))
+    A("")
+    A("| | Statements | Share |")
+    A("|---|---:|---:|")
+    A(f"| Covered | {len(covered)} | {pct(len(covered), total):.1f}% |")
+    A(f"| Partly covered | {len(partial)} | {pct(len(partial), total):.1f}% |")
+    A(f"| Missing | {len(missing)} | {pct(len(missing), total):.1f}% |")
+    A("")
+
+    if missing:
+        shown = missing[:60]
+        A(f"### What is missing ({len(missing)} statement(s))")
+        A("")
+        if len(shown) < len(missing):
+            A(f"_First {len(shown)}; the rest are in `report.json`._")
+            A("")
+        for c in shown:
+            A(f"- {c.text}")
+        A("")
+
+    if partial:
+        shown = partial[:40]
+        A(f"<details><summary>Partly covered ({len(partial)}) — the idea is there, "
+          f"detail is not</summary>")
+        A("")
+        for c in shown:
+            gaps = []
+            if c.dropped_numbers:
+                gaps.append("numbers dropped: " + ", ".join(map(str, c.dropped_numbers)))
+            if c.dropped_entities:
+                gaps.append("names dropped: " + ", ".join(map(str, c.dropped_entities)))
+            A(f"- {c.text}")
+            if gaps:
+                A(f"  - _{'; '.join(gaps)}_")
+        if len(shown) < len(partial):
+            A(f"- _…and {len(partial) - len(shown)} more, in `report.json`._")
         A("")
         A("</details>")
         A("")
 
-    if verdict:
-        A(f"> **Claude's independent read of coverage: {verdict['coverage_percent']}%** — "
-          f"{verdict['coverage_verdict']}")
-        A("")
-        if verdict.get("originality"):
-            o = verdict["originality"]
-            A(f"> **Is this taught or recited? {o['verdict']}** — {o['note']}")
-            A("")
-
-    # ---- Q1 coverage
-    A("## 2. Does the audio carry all the context?")
+    # ---- what "the book" means -------------------------------------------
+    A("## What counted as \"the book\"")
     A("")
-    if missing:
-        A(f"**No — {len(missing)} statement(s) from the source never appear in any lesson.**")
+    if excluded:
+        A(f"{len(excluded)} page(s) were left out of the comparison — front matter, "
+          f"contents and back matter are not content anybody narrates, and counting "
+          f"them as missing would understate coverage:")
         A("")
-        A("| # | Missing from the course | Closest thing the audio says |")
-        A("| --- | --- | --- |")
-        for c in missing:
-            closest = c.best_unit[:90] + ("…" if len(c.best_unit) > 90 else "")
-            A(f"| {c.idx} | {c.text} | _{closest}_ (sim {c.best_emb:.2f}) |")
+        A("| Page | Left out because | Starts |")
+        A("|---:|---|---|")
+        for e in excluded:
+            A(f"| {e['page']} | {e['reason']} | {e['preview']} |")
         A("")
     else:
-        A("**Yes — every statement in the source has a corresponding passage in the audio.**")
+        A("Every page of the PDF was treated as body text — no contents page, "
+          "front matter or appendix was detected.")
         A("")
-
-    if partial:
-        A(f"### Carried, but with specifics dropped ({len(partial)})")
-        A("")
-        A("| Source statement | What went missing | Where it landed |")
-        A("| --- | --- | --- |")
-        for c in partial:
-            drop = ", ".join(f"`{d}`" for d in (c.dropped_numbers + c.dropped_entities)) or "—"
-            A(f"| {c.text} | {drop} | {c.best_lesson} |")
-        A("")
-
-    # ---- Q2 fabrication
-    A("## 3. Did the AI invent anything?")
-    A("")
-    if ungrounded:
-        A(f"### Narrated content with no close match in the source ({len(ungrounded)})")
-        A("")
-        A("| Lesson | Sentence | Similarity to nearest source statement |")
-        A("| --- | --- | --- |")
-        for u in ungrounded:
-            A(f"| {u.lesson} | {u.text} | {u.best_emb:.2f} |")
-        A("")
-    else:
-        A("No narrated sentence sits far enough from the source to be flagged mechanically.")
-        A("")
-
-    if ent_flags:
-        A(f"### Names and numbers spoken that are not in the source ({len(ent_flags)})")
-        A("")
-        A("| Lesson | Not in source | Sentence |")
-        A("| --- | --- | --- |")
-        for u in ent_flags:
-            bits = ", ".join(f"`{b}`" for b in (u.ungrounded_entities + u.ungrounded_numbers))
-            A(f"| {u.lesson} | {bits} | {u.text} |")
-        A("")
-        A("_Fuzzy matching is applied before flagging, so mangled-but-recognisable names "
-          "are not listed here. What remains is either genuinely new information or a "
-          "transcription error severe enough to change the word._")
-        A("")
-
-    if verdict and verdict["fabrications"]:
-        A("### Adjudicated findings")
-        A("")
-        for f in verdict["fabrications"]:
-            A(f"- **{f['kind'].replace('_', ' ')}** — _{f['lesson']}_: “{f['claim_in_audio']}”")
-            A(f"  {f['explanation']}")
-        A("")
-    elif verdict:
-        A("### Adjudicated findings")
-        A("")
-        A("No fabrications confirmed on review.")
-        A("")
-
-    # ---- Q3b originality
-    A("## 4. Is it taught, or is it read out?")
-    A("")
-    n = lifted["shingle"]
-    A(f"**{lifted['percent']:.1f}% of narrated words sit inside a run of {n}+ consecutive "
-      f"words copied from the source** ({lifted['lifted']:,} of {lifted['words']:,} words, "
-      f"{len(lifted['runs'])} runs).")
-    A("")
-    A("| Lesson | Words | Lifted | Longest unbroken run |")
-    A("| --- | --- | --- | --- |")
-    for r in lifted["per_lesson"]:
-        A(f"| {r['lesson']} | {r['words']:,} | {r['percent']:.0f}% | "
-          f"{r['longest_run']} words |")
-    A("")
-    if lifted["runs"]:
-        A(f"### Longest passages carried over word-for-word")
-        A("")
-        for r in lifted["runs"][:15]:
-            A(f"- **{r['length']} words** — _{r['lesson']}_")
-            A(f"  > {r['text'][:400]}{'…' if len(r['text']) > 400 else ''}")
-        A("")
-    A("_Scripture is the honest exception: where the source quotes a verse and the "
-      "course quotes the same verse, the run above is shared quotation of a third text, "
-      "not the source's own prose. Check long runs against that before treating them as "
-      "copying._")
+    A(f"Running headers and page numbers are stripped from the pages that were kept. "
+      f"Body text used: {len(bare_words(body)):,} words.")
     A("")
 
-    # ---- Q3 redundancy
-    A("## 5. Duplication and redundancy")
+    # ---- method -----------------------------------------------------------
+    A("## How this was measured")
     A("")
-    multi = [c for c in claims if len(c.lessons_covering) > 1]
-    A(f"{len(multi)} of {len(claims)} source statements are taught in more than one lesson "
-      f"({pct(len(multi), len(claims)):.0f}%).")
+    A(f"- **Source text** — {provenance}.")
+    if ocr_conf < 100:
+        A(f"- **OCR quality** — {ocr_conf:.1f}% mean word confidence (gate {gate:.0f}%), "
+          f"{lex:.1f}% of words found in a dictionary (gate {lex_gate:.0f}%).")
+    A(f"- **Audio** — transcribed with faster-whisper `{tr.model_name}` on "
+      f"{tr.device}/{tr.compute_type}"
+      + (f", VAD off" if not tr.vad_filter else "") + ".")
+    A(f"- **Re-worded %** — the share of spoken words NOT inside a run of {shingle}+ "
+      f"consecutive words matching the book in order.")
+    A(f"- **Present %** — each book statement is matched against every spoken sentence "
+      f"using sentence-embedding similarity ({EMBED_MODEL_NAME}) plus a check that the "
+      f"numbers and names in it survived. Covered at ≥{COVERED_EMB:.2f} similarity, "
+      f"partial at ≥{PARTIAL_EMB:.2f}.")
     A("")
-    if multi:
-        A("| Source statement | Repeated in |")
-        A("| --- | --- |")
-        for c in sorted(multi, key=lambda c: -len(c.lessons_covering)):
-            A(f"| {c.text} | {', '.join(c.lessons_covering)} |")
-        A("")
-    if dups:
-        A(f"### Near-identical narrated sentences ({len(dups)} pairs)")
-        A("")
-        A("| Sim | A | B |")
-        A("| --- | --- | --- |")
-        for a, b, s in dups:
-            A(f"| {s:.2f} | _{a.lesson}_<br>{a.text} | _{b.lesson}_<br>{b.text} |")
-        A("")
-    if verdict and verdict["redundancy"]:
-        A("### Adjudicated redundancy")
-        A("")
-        for r in verdict["redundancy"]:
-            tag = "justified" if r["justified"] else "**not justified**"
-            A(f"- **{r['repeated_content']}** ({r['lessons']}) — {tag}. {r['note']}")
-        A("")
-
-    # ---- Q4 teachability
-    A("## 6. Is it teachable?")
+    A("_These are measurements of this parse of this text, not legal conclusions. "
+      "The re-worded percentage is evidence about copying, not a ruling on it._")
     A("")
-    A("| Lesson | Minutes | Words | Sentences | Scaffold | Source statements touched | Direct quotes |")
-    A("| --- | --- | --- | --- | --- | --- | --- |")
-    for name, text in lessons:
-        lu = [u for u in units if u.lesson == name]
-        touched = len({c.idx for c in claims if name in c.lessons_covering})
-        quotes = sum(1 for u in lu if re.search(
-            r"\b(he (says|writes|states)|the author (says|writes|states)|"
-            r"he adds|he even wondered)\b", u.text.lower()))
-        words = len(re.findall(r"\w+", text))
-        mins = durations.get(name, 0) / 60
-        scaf = sum(1 for u in lu if u.scaffold)
-        A(f"| {name} | {mins:.1f} | {words} | {len(lu)} | {scaf} | {touched} | {quotes} |")
-    A("")
-    if verdict:
-        t = verdict["teachability"]
-        A(f"**Verdict:** {t['verdict']}")
-        A("")
-        if t["strengths"]:
-            A("Strengths:")
-            for s in t["strengths"]:
-                A(f"- {s}")
-            A("")
-        if t["weaknesses"]:
-            A("Weaknesses:")
-            for w in t["weaknesses"]:
-                A(f"- {w}")
-            A("")
-
-    if verdict and verdict["missing_from_course"]:
-        A("## 7. What a listener will never learn")
-        A("")
-        for m in verdict["missing_from_course"]:
-            A(f"- **{m['source_fact']}** — {m['why_it_matters']}")
-        A("")
-
-    if verdict:
-        A("## Bottom line")
-        A("")
-        A(verdict["bottom_line"])
-        A("")
-
-    A("---")
-    A("")
-    A("<details><summary>Source statements as parsed</summary>")
-    A("")
-    for c in claims:
-        mark = {"covered": "x", "partial": "~", "missing": " "}[c.status]
-        A(f"- [{mark}] `{c.idx:02d}` {c.text}")
-    A("")
-    A("</details>")
-    A("")
-    A("_Generated by `analyze_course.py`. Coverage percentages are computed from "
-      "sentence-embedding similarity plus entity/number grounding against the parsed "
-      "source statements shown above; they are a measurement of this parse, not a "
-      "universal truth._")
 
     return "\n".join(L)
-
 
 # ---------------------------------------------------------------------------
 
@@ -1753,7 +1580,7 @@ def preflight(tr: Transcriber, reason: str, gate: float, lex_gate: float) -> int
     print("\npython packages")
     for mod, required in (("faster_whisper", True), ("ctranslate2", True),
                           ("sentence_transformers", True), ("numpy", True),
-                          ("fitz", need_pdf), ("torch", False), ("anthropic", False)):
+                          ("fitz", need_pdf), ("torch", False)):
         try:
             m = __import__(mod)
             ver = getattr(m, "__version__", "?")
@@ -1782,15 +1609,6 @@ def preflight(tr: Transcriber, reason: str, gate: float, lex_gate: float) -> int
               "        CPU — correct, just slower. On a GPU host this resolves to cuda\n"
               "        automatically; force it with --device cuda to fail loudly instead.")
 
-    print("\ncredentials")
-    key = bool(os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN"))
-    profile = (Path.home() / ".config" / "anthropic").exists()
-    if key or profile:
-        print(f"  ok   anthropic                 {'env var' if key else 'ant auth profile'}")
-    else:
-        print("  --   anthropic                 none — adjudication pass will be skipped\n"
-              "                                  (use --no-llm, or --adjudication FILE)")
-
     print("\n" + "-" * 62)
     print("READY" if ok else "NOT READY — fix the FAIL rows above")
     return 0 if ok else 1
@@ -1801,10 +1619,6 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--check", action="store_true",
                     help="print resolved device/model/deps and exit without doing work")
-    ap.add_argument("--no-llm", action="store_true", help="skip the Claude adjudication pass")
-    ap.add_argument("--adjudication", metavar="FILE",
-                    help="use a pre-computed adjudication JSON (matching ADJUDICATION_SCHEMA) "
-                         "instead of calling the API; useful where no credentials are available")
     ap.add_argument("--force-ocr", action="store_true")
     ap.add_argument("--force-transcribe", action="store_true")
 
@@ -1818,9 +1632,11 @@ def main() -> int:
     o.add_argument("--ignore-ocr-gate", action="store_true",
                    help="score anyway when the source text is below either gate; the "
                         "report carries a prominent unreliability warning")
-    o.add_argument("--keep-front-matter", action="store_true",
-                   help="score copyright/registration/title boilerplate as teaching "
-                        "content too (default: excluded and listed separately)")
+    o.add_argument("--whole-document", "--keep-front-matter", dest="keep_front_matter",
+                   action="store_true",
+                   help="measure against every page, including title/copyright pages, "
+                        "the table of contents and any appendix (default: body text "
+                        "only, with each dropped page listed in the report)")
 
     v = ap.add_argument_group("originality")
     v.add_argument("--verbatim-shingle", type=int, default=VERBATIM_SHINGLE, metavar="N",
@@ -1872,17 +1688,39 @@ def main() -> int:
     WORK_DIR.mkdir(parents=True, exist_ok=True)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    print("[1/5] reading source document", file=sys.stderr)
-    source, provenance, ocr_conf, ocr_lines = load_source(args.force_ocr)
-    print(f"      {provenance}", file=sys.stderr)
+    print("[1/4] reading source document", file=sys.stderr)
+    raw_source, provenance, ocr_conf, ocr_lines, method = load_source(args.force_ocr)
+    page_count = len(raw_source.split(PAGE_SEP))
+    source = normalize_source(raw_source)
+    print(f"      {provenance}  ({page_count} page(s))", file=sys.stderr)
 
-    lex, offenders = lexical_validity(source)
+    # What "the book" is, decided before anything is measured against it: contents pages
+    # and appendices are not content anybody narrates, and leaving them in would count
+    # them as missing and understate coverage.
+    if args.keep_front_matter:
+        body, excluded = source, []
+    else:
+        body_raw, excluded = body_text(raw_source)
+        body = normalize_source(body_raw)
+    for e in excluded:
+        print(f"      excluded page {e['page']}: {e['reason']}", file=sys.stderr)
+
+    # Gates are measured on the body, not the whole PDF: a contents page is dot leaders
+    # and a copyright page is legal boilerplate, and neither says anything about whether
+    # the text being scored was read correctly.
+    lex, offenders = lexical_validity(body)
     if lex >= 0:
         print(f"      dictionary validity {lex:.1f}% ({len(offenders)} non-words)",
               file=sys.stderr)
 
-    gate_failed = (ocr_conf < args.ocr_gate) or (0 <= lex < args.lex_gate)
+    # ...and they only apply to OCR. Both gates are proxies for "did tesseract misread
+    # this"; text lifted straight out of the PDF's own text layer has no misreads to
+    # find, and an academic book's vocabulary would fail the dictionary gate on merit.
+    gate_failed = method == "ocr" and ((ocr_conf < args.ocr_gate) or (0 <= lex < args.lex_gate))
     gate_bypassed = gate_failed and args.ignore_ocr_gate
+    if method != "ocr":
+        print(f"      quality gates not applicable ({method}) — nothing was OCR'd",
+              file=sys.stderr)
 
     if gate_failed and not args.ignore_ocr_gate:
         # Still transcribe: it is the slow half, it is cached, and the operator will
@@ -1890,7 +1728,7 @@ def main() -> int:
         print(f"      source text rejected (confidence {ocr_conf:.1f}%/{args.ocr_gate:.0f}%, "
               f"dictionary {lex:.1f}%/{args.lex_gate:.0f}%) — will not score coverage",
               file=sys.stderr)
-        print(f"[2/5] transcribing audio with {tr.model_name} on {tr.device}/{tr.compute_type} ({reason})",
+        print(f"[2/4] transcribing audio with {tr.model_name} on {tr.device}/{tr.compute_type} ({reason})",
               file=sys.stderr)
         lessons, durations = load_lessons(tr, args.force_transcribe)
         OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -1901,46 +1739,27 @@ def main() -> int:
         print(f"\nwrote {REPORT_MD}  (source text rejected — see 'Fix it')", file=sys.stderr)
         return 2
 
-    all_claims = split_claims(source)
-    # Front matter is dropped before matching rather than filtered out of each total
-    # afterwards, so every downstream count is right by construction.
-    if args.keep_front_matter:
-        claims, front_matter = all_claims, []
-    else:
-        front_matter = [c for c in all_claims if is_boilerplate(c.text)]
-        claims = [c for c in all_claims if not is_boilerplate(c.text)]
-    print(f"      {len(claims)} source statements"
-          + (f" ({len(front_matter)} excluded as front matter)" if front_matter else ""),
-          file=sys.stderr)
+    claims = split_claims(body)
+    print(f"      {len(claims)} statements from {page_count - len(excluded)} "
+          f"body page(s)", file=sys.stderr)
 
-    print(f"[2/5] transcribing audio with {tr.model_name} on {tr.device}/{tr.compute_type} ({reason})", file=sys.stderr)
+    print(f"[2/4] transcribing audio with {tr.model_name} on {tr.device}/{tr.compute_type} ({reason})", file=sys.stderr)
     lessons, durations = load_lessons(tr, args.force_transcribe)
 
-    print("[3/5] matching", file=sys.stderr)
+    print("[3/4] matching", file=sys.stderr)
     units = build_units(lessons)
     match(claims, units)
-    dups = near_duplicates(units)
-    lifted = verbatim_runs(source, lessons, args.verbatim_shingle)
-    print(f"      {lifted['percent']:.1f}% of narration is verbatim from the source "
-          f"(runs of {args.verbatim_shingle}+ words)", file=sys.stderr)
+    lifted = verbatim_runs(body, lessons, args.verbatim_shingle)
+    print(f"      {100.0 - lifted['percent']:.1f}% of narration is re-worded "
+          f"({lifted['percent']:.1f}% verbatim, runs of {args.verbatim_shingle}+ words)",
+          file=sys.stderr)
+    print(f"      {pct(sum(1 for c in claims if c.status != 'missing'), len(claims)):.1f}% "
+          f"of the book is present in the audio", file=sys.stderr)
 
-    verdict = None
-    digest = signal_digest(claims, units, dups, lifted)
-    (WORK_DIR / "signals.txt").write_text(digest, encoding="utf-8")
-
-    if args.adjudication:
-        print(f"[4/5] loading adjudication from {args.adjudication}", file=sys.stderr)
-        verdict = json.loads(Path(args.adjudication).read_text(encoding="utf-8"))
-    elif not args.no_llm:
-        print("[4/5] adjudicating with Claude", file=sys.stderr)
-        verdict = adjudicate(source, lessons, digest)
-    else:
-        print("[4/5] skipping adjudication (--no-llm)", file=sys.stderr)
-
-    print("[5/5] writing report", file=sys.stderr)
-    md = render(source, provenance, ocr_conf, args.ocr_gate, lex, args.lex_gate,
-                gate_bypassed, claims, units, lessons, dups, durations, verdict, tr,
-                lifted, front_matter)
+    print("[4/4] writing report", file=sys.stderr)
+    md = render(body, provenance, ocr_conf, args.ocr_gate, lex, args.lex_gate,
+                gate_bypassed, claims, lessons, tr, lifted,
+                excluded, args.verbatim_shingle)
     REPORT_MD.write_text(md, encoding="utf-8")
     REPORT_JSON.write_text(json.dumps({
         "source": source,
@@ -1963,18 +1782,14 @@ def main() -> int:
             "embed_device": torch_device(),
             "cuda_devices_visible": cuda_devices(),
         },
+        # The two headline answers, so a caller does not have to recompute them.
+        "reworded_percent": 100.0 - lifted["percent"],
+        "present_percent": pct(sum(1 for c in claims if c.status != "missing"), len(claims)),
         "verbatim": lifted,
-        "front_matter_excluded": [c.as_dict() for c in front_matter],
+        "excluded_pages": excluded,
         "claims": [c.as_dict() for c in claims],
         "units": [asdict(u) for u in units],
-        "near_duplicates": [
-            {"a": {"lesson": a.lesson, "text": a.text},
-             "b": {"lesson": b.lesson, "text": b.text},
-             "similarity": s}
-            for a, b, s in dups
-        ],
         "durations": durations,
-        "adjudication": verdict,
     }, indent=2), encoding="utf-8")
 
     print(f"\nwrote {REPORT_MD}", file=sys.stderr)

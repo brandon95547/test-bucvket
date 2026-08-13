@@ -41,7 +41,6 @@ pymupdf==1.28.0                 # imported as `fitz`; required for the PDF path 
 pillow==12.2.0
 scipy==1.17.1
 
-# --- optional: the Claude adjudication pass
-# Skipped with a warning when this is missing or no ANTHROPIC_API_KEY is set;
-# the deterministic report is produced either way.
-anthropic==0.120.0
+# No LLM dependency, deliberately. Both numbers in the report are computed — word-run
+# matching for the re-worded percentage, embeddings for coverage — so the same inputs
+# always produce the same report, and it runs on a box with no API credentials.
