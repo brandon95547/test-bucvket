@@ -1715,6 +1715,10 @@ def preflight(tr: Transcriber, reason: str, gate: float, lex_gate: float) -> int
     # sidecar transcription fails preflight over tools it will never call.
     need_pdf = SIDECAR_SOURCE is None
 
+    # Which python is answering matters more than any row below it: a missing package
+    # here usually means the wrong interpreter, not an unbuilt venv.
+    print(f"\ninterpreter\n       {sys.executable}")
+
     print("\npaths")
     if need_pdf:
         row("source pdf", str(INPUT_PDF), INPUT_PDF.exists())
